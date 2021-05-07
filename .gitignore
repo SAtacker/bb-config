@@ -73,3 +73,5 @@ include/divisible/*
 
 build/**
 _deps/**
+
+.vscode/**
