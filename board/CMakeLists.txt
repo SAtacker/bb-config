@@ -24,4 +24,6 @@ target_link_libraries(${PROJECT_NAME}
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
-add_test(NAME main COMMAND main)
+add_test(NAME main 
+        COMMAND echo | ./board/beagle-config
+        WORKING_DIRECTORY build)
