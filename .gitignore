@@ -75,3 +75,6 @@ build/**
 _deps/**
 
 .vscode/**
+
+## Workflow that doesn't work
+.github/workflows/build_cmake.yml
