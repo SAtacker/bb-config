@@ -1,12 +1,9 @@
 #include "ui/ui.hpp"
 
-int main(int argc, const char* argv[]) {
-  auto screen = ftxui::ScreenInteractive::TerminalOutput();
-  int red = 128;
-  int green = 25;
-  int blue = 100;
-  auto component = ui::MyComponent(&red, &green, &blue, screen.ExitLoopClosure());
-  screen.Loop(&component);
-  std::cout<<"Test"<<std::endl;
-  return EXIT_SUCCESS;
+int main(int argc, const char *argv[]) {
+  auto main_ = ui::beagle_window();
+  auto menu = main_.get_menu();
+  auto screen = main_.get_screen();
+  screen->Loop(*menu);
+  return 0;
 }
