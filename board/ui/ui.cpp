@@ -33,41 +33,50 @@ beagle_window::beagle_window() {
   tab_index = 0;
   captured_output.clear();
 
-  main_menu_component = new Component(Menu(&main_entries, &main_selected));
-  network_menu = new Component(Menu(&network_entries, &network_selected));
-  quit_button = new Component(Button(L"Quit", main_screen->ExitLoopClosure()));
+  auto main_menu_component = Menu(&main_entries, &main_selected);
+  auto network_menu = Menu(&network_entries, &network_selected);
+  auto quit_button = Button(L"Quit", main_screen->ExitLoopClosure());
 
-  tab_selection = new Component(Toggle(&tab_entries, &tab_index));
-  tab_content = new Component(
-      Container::Tab({*main_menu_component, *network_menu}, &tab_index));
+  auto tab_selection = Toggle(&tab_entries, &tab_index);
+  auto tab_content = Container::Tab(
+      {
+          main_menu_component,
+          network_menu,
+      },
+      &tab_index);
 
-  ftxui::MenuBase::From(*main_menu_component)->on_enter = [&]() { execute(); };
-  help_button = new Component(Button(L"Help", main_screen->ExitLoopClosure()));
+  ftxui::MenuBase::From(main_menu_component)->on_enter = [&] { execute(); };
+  auto help_button = Button(L"Help", main_screen->ExitLoopClosure());
 
-  main_menu = new Component(Renderer(
-      Container::Vertical(
-          {*tab_selection, *tab_content,
-           Container::Horizontal({*quit_button, *help_button})}),
-      [&] {
-        return window(
-            text(L"beagle-config") | bold | color(Color::Cyan1) | hcenter,
-            vbox(tab_selection->get()->Render() | color(Color::Cyan1) |
-                     bgcolor(Color::Black) | hcenter,
-                 hbox(tab_content->get()->Render() | flex |
-                          color(Color::Cyan1) | bgcolor(Color::Black) |
-                          color(Color::Cyan1) | hcenter | flex,
-                      hflow(set_output_window())) |
-                     flex,
-                 hbox(quit_button->get()->Render() | color(Color::Cyan1) |
-                          bgcolor(Color::Black),
-                      help_button->get()->Render() | color(Color::Cyan1) |
-                          bgcolor(Color::Black)) |
-                     hcenter) |
-                bgcolor(Color::Black));
-      }));
+  auto main_layout = Container::Vertical({
+      tab_selection,
+      tab_content,
+      Container::Horizontal({
+          quit_button,
+          help_button,
+      }),
+  });
+
+  main_menu = Renderer(main_layout, [this, tab_selection, tab_content,
+                                     quit_button, help_button] {
+    return window(text(L"beagle-config") | bold | color(Color::Cyan1) | hcenter,
+                  vbox(tab_selection->Render() | color(Color::Cyan1) |
+                           bgcolor(Color::Black) | hcenter,
+                       hbox(tab_content->Render() | flex | color(Color::Cyan1) |
+                                bgcolor(Color::Black) | color(Color::Cyan1) |
+                                hcenter | flex,
+                            hflow(set_output_window())) |
+                           flex,
+                       hbox(quit_button->Render() | color(Color::Cyan1) |
+                                bgcolor(Color::Black),
+                            help_button->Render() | color(Color::Cyan1) |
+                                bgcolor(Color::Black)) |
+                           hcenter) |
+                      bgcolor(Color::Black));
+  });
 }
 
-Component *beagle_window::get_menu() { return main_menu; }
+Component beagle_window::get_menu() { return main_menu; }
 
 ScreenInteractive *beagle_window::get_screen() { return main_screen; }
 
@@ -110,15 +119,4 @@ std::wstring beagle_window::get_help_string() {
 
 Elements beagle_window::set_output_window() {
   return paragraph(get_help_string());
-}
-
-beagle_window::~beagle_window() {
-  delete main_menu_component;
-  delete network_menu;
-  delete quit_button;
-  delete help_button;
-  delete tab_selection;
-  delete tab_content;
-  delete main_screen;
-  delete main_menu;
 }

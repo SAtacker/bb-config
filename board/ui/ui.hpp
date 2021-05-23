@@ -19,13 +19,8 @@ namespace ui {
 class beagle_window {
 private:
   /* data */
-  Component *main_menu;
-  Component *main_menu_component;
-  Component *network_menu;
-  Component *quit_button;
-  Component *help_button;
-  Component *tab_selection;
-  Component *tab_content;
+  Component main_menu;
+
   ScreenInteractive *main_screen;
   std::vector<std::wstring> main_entries;
   std::vector<std::wstring> network_entries;
@@ -37,7 +32,7 @@ private:
 
 public:
   beagle_window();
-  Component *get_menu();
+  Component get_menu();
   ScreenInteractive *get_screen();
   int get_selected_number();
   std::wstring get_selected_option();
@@ -45,7 +40,6 @@ public:
   std::wstring get_help_string();
   Elements set_output_window();
   std::string manage_command(const char *cmd);
-  ~beagle_window();
 };
 
 } // namespace ui
