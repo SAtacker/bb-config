@@ -28,6 +28,7 @@ class beagle_window {
   static int main_selected;
   static int network_selected;
   static int tab_index;
+  static int depth;
   std::wstring captured_output;
 
  public:
@@ -38,7 +39,7 @@ class beagle_window {
   std::wstring get_selected_option();
   void execute();
   std::wstring get_help_string();
-  Elements set_output_window();
+  Elements set_output_window(std::wstring str);
   std::string manage_command(const char* cmd);
 };
 

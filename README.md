@@ -7,4 +7,4 @@ make
 ```
 
 ### Current Status
-![gif](assets/images/cast.gif)
+[![asciicast](https://asciinema.org/a/g68rdFLFRJeo32IwLxf69Sjqf.svg)](https://asciinema.org/a/g68rdFLFRJeo32IwLxf69Sjqf)
