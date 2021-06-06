@@ -30,12 +30,6 @@ class panel_base : public ComponentBase {
   Component panel;
   Components components;
 
-  bool VerticalEvent(Event event);
-  bool HorizontalEvent(Event event);
-  bool OnMouseEvent(Event event);
-
-  int selected_ = 0;
-  int* selector_ = nullptr;
   int* external = nullptr;
 
   /* 0 for vertical and 1 for horizontal */
@@ -51,10 +45,7 @@ class panel_base : public ComponentBase {
              int*);
   ~panel_base() override = default;
 
-  bool OnEvent(Event event) override;
   Element Render() override;
-  Component ActiveChild() override;
-  virtual void SetActiveChild(ComponentBase*) override;
 };
 
 }  // namespace custom_container_component
