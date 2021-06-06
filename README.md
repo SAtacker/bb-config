@@ -7,7 +7,7 @@ make -j8
 ```
 
 ### Current Status
-[![asciicast](https://asciinema.org/a/QhBR4ByTSmMg9Pl4j38LuoCh9.svg)](https://asciinema.org/a/QhBR4ByTSmMg9Pl4j38LuoCh9)
+[![asciicast](https://asciinema.org/a/XPxOSDxAXEvBEK5efNpVU6bEe.svg)](https://asciinema.org/a/XPxOSDxAXEvBEK5efNpVU6bEe)
 
 ### For Arm
 
@@ -28,4 +28,4 @@ sudo ln -s /lib/ld-linux-armhf.so.3 /lib/ld-linux.so.3
 ./beagle-config
 ```
 
-[![asciicast](https://asciinema.org/a/QkZqUxBLt5kj3iyKz1ToKwedj.svg)](https://asciinema.org/a/QkZqUxBLt5kj3iyKz1ToKwedj)
+[![asciicast](https://asciinema.org/a/i0CJ56NdL6e28jXl31RQuRYUl.svg)](https://asciinema.org/a/i0CJ56NdL6e28jXl31RQuRYUl)
