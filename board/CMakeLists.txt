@@ -1,30 +1,19 @@
+cmake_minimum_required (VERSION 3.11)
+project(beagle-config VERSION 0.1.0)
+
+# Adding Subdirectory for beagle-panel
+add_subdirectory(ui/)
+
+set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
+
 add_executable(${PROJECT_NAME} 
                 main.cpp 
                 ui/ui.cpp
-                )
-
-include(FetchContent)
-
-set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
-FetchContent_Declare(ftxui
-  GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
-  GIT_TAG 87a1d75bf1c1ee964e8eed4a6686544ae3b44116
 )
 
-FetchContent_GetProperties(ftxui)
-if(NOT ftxui_POPULATED)
-  FetchContent_Populate(ftxui)
-  add_subdirectory(${ftxui_SOURCE_DIR} ${ftxui_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
-
+# linking with beagle-panel
 target_link_libraries(${PROJECT_NAME}
-  PRIVATE ftxui::screen
-  PRIVATE ftxui::dom
-  PRIVATE ftxui::component # Not needed for this example.
+  PRIVATE beagle-panel
 )
 
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
-
-add_test(NAME main 
-        COMMAND echo | ./board/beagle-config
-        WORKING_DIRECTORY build)

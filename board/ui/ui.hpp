@@ -1,45 +1,64 @@
-#include <functional>       // for function
-#include <initializer_list> // for initializer_list
-#include <memory>           // for __shared_ptr_access, shared_ptr, allocator
-#include <string>           // for wstring, basic_string
-#include <vector>           // for vector
-
-#include "ftxui/component/captured_mouse.hpp" // for ftxui
-#include "ftxui/component/component.hpp"      // for Menu, Horizontal, Renderer
-#include "ftxui/component/component_base.hpp" // for ComponentBase
-#include "ftxui/component/menu.hpp"           // for MenuBase
-#include "ftxui/component/screen_interactive.hpp" // for ScreenInteractive, Component
-#include "ftxui/dom/elements.hpp" // for operator|, Element, separator, bgcolor, color, flex, Decorator, bold, hbox, border, dim
-#include "ftxui/screen/color.hpp" // for Color, Color::Blue, Color::BlueLight, Color::Red, Color::Yellow             // for Color
+#include "custom_container/custom_container.hpp"
 
 using namespace ftxui;
 
 namespace ui {
 
-class beagle_window {
-private:
-  /* data */
-  Component main_menu;
-
-  ScreenInteractive *main_screen;
-  std::vector<std::wstring> main_entries;
-  std::vector<std::wstring> network_entries;
-  std::vector<std::wstring> tab_entries;
-  static int main_selected;
-  static int network_selected;
-  static int tab_index;
-  std::wstring captured_output;
-
-public:
-  beagle_window();
-  Component get_menu();
-  ScreenInteractive *get_screen();
-  int get_selected_number();
-  std::wstring get_selected_option();
-  void execute();
-  std::wstring get_help_string();
-  Elements set_output_window();
-  std::string manage_command(const char *cmd);
+class checkbox_bool {
+ public:
+  checkbox_bool() : checked(false){};
+  bool checked;
 };
 
-} // namespace ui
+class beagle_window {
+ private:
+  /* This is the main window which appears before anything */
+  Component main_window;
+
+  /* A tab container renders the component based on the current selected menu */
+  Component tab_container;
+
+  /* A horizontal component containing menu component and tab container */
+  Component container;
+
+  /* This is the top level menu and component on the left */
+  Component tab_menu;
+
+  /* It's a vector of components on the right-hand side of window */
+  std::vector<Component> right_component_1;
+  std::vector<Component> right_component_2;
+  std::vector<Component> right_component_3;
+
+  /* This stores the selection of submenu */
+  std::vector<int> right_component_selection;
+  std::vector<checkbox_bool> gpio_selection{false};
+
+  /* It stores the current top level menu selected */
+  int tab_selected;
+  int tab_1_selected;
+  int tab_2_selected;
+  int tab_3_selected;
+
+  /* Sliders */
+  int emmc_slider;
+
+  /* It stores the entries for the right menu component */
+  std::vector<std::wstring> tab_3_entries;
+  std::vector<std::wstring> tab_2_entries;
+  std::vector<std::wstring> tab_1_entries;
+
+  /* It's the main terminal screen */
+  ScreenInteractive* main_screen;
+
+  /* This will provide the captured output from the buffer*/
+  std::wstring captured_output;
+
+ public:
+  beagle_window();
+  Component get_menu();
+  ScreenInteractive* get_screen();
+  void execute();
+  std::string manage_command(const char* cmd);
+};
+
+}  // namespace ui

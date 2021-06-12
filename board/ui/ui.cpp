@@ -1,101 +1,375 @@
 #include "ui.hpp"
 
 using namespace ui;
-
-int beagle_window::main_selected = 0;
-int beagle_window::network_selected = 0;
-int beagle_window::tab_index = 0;
+using namespace custom_container_component;
 
 beagle_window::beagle_window() {
   main_screen = new ScreenInteractive(ftxui::ScreenInteractive::Fullscreen());
 
-  tab_entries = {
-      L"System", L"Network",
-      // TODO::
-      // L"Interfacing",
-      // L"Display",
+  tab_1_entries = {
+      L"PRU enable/disable",
+      L"GPIO configuration",
+      L"Internet Sharing and Client Configurations ",
+      L"eMMC and MicroSD stats",
+      L"Freeze Packages",
+      L"Wireless Configurations",
+      L"Sensor Stats and Configurations ",
+      L"Password",
+      L"Boot / Auto login ",
+      L"User LED",
+      L"Firmware Update",
   };
-
-  main_entries = {
-      L"sys entry 1",
-      L"sys entry 2",
-      L"sys entry 3",
+  tab_2_entries = {
+      L"Resolution",
   };
-
-  network_entries = {
-      L"net entry 1",
-      L"net entry 2",
-      L"net entry 3",
+  tab_3_entries = {
+      L"SSH", L"Uboot Overlays", L"Overlay FS", L"Update", L"About",
   };
-
-  main_selected = 0;
-  network_selected = 0;
-  tab_index = 0;
-  captured_output.clear();
-
-  auto main_menu_component = Menu(&main_entries, &main_selected);
-  auto network_menu = Menu(&network_entries, &network_selected);
-  auto quit_button = Button(L"Quit", main_screen->ExitLoopClosure());
-
-  auto tab_selection = Toggle(&tab_entries, &tab_index);
-  auto tab_content = Container::Tab(
+  tab_1_selected = 0;
+  tab_2_selected = 0;
+  tab_3_selected = 0;
+  tab_menu = panel(
       {
-          main_menu_component,
-          network_menu,
+          Menu(&tab_1_entries, &tab_1_selected),
+          Menu(&tab_2_entries, &tab_2_selected),
+          Menu(&tab_3_entries, &tab_3_selected),
       },
-      &tab_index);
+      {
+          L"System",
+          L"Display",
+          L"Interfacing",
+      },
+      0, &tab_selected);
 
-  ftxui::MenuBase::From(main_menu_component)->on_enter = [&] { execute(); };
-  auto help_button = Button(L"Help", main_screen->ExitLoopClosure());
+  right_component_selection.resize(3);
+  gpio_selection.resize(5);
+  emmc_slider = 20;
+  right_component_1 = {
+      panel(
+          {
+              panel(
+                  {
+                      Button(L"PRU On", [] {}),
+                      Button(L"PRU Off", [] {}),
+                  },
+                  {
+                      L"",
+                      L"",
+                  },
+                  1),
+              Button(L"Upload", [] {}),
+          },
+          {
+              L"PRU",
+              L"Program",
+          }),
+      panel(
+          {
+              Checkbox(L"Input / Output", &gpio_selection[0].checked),
+              Checkbox(L"Input / Output", &gpio_selection[1].checked),
+              Checkbox(L"Input / Output", &gpio_selection[2].checked),
+              Checkbox(L"Input / Output", &gpio_selection[3].checked),
+              Checkbox(L"Input / Output", &gpio_selection[4].checked),
+          },
+          {
+              L"GPIO 1",
+              L"GPIO 2",
+              L"GPIO 3",
+              L"GPIO 4",
+              L"GPIO 5",
+          }),
+      panel(
+          {
 
-  auto main_layout = Container::Vertical({
-      tab_selection,
-      tab_content,
-      Container::Horizontal({
-          quit_button,
-          help_button,
-      }),
+              panel(
+                  {
+                      Button(L"ICS On", [] {}),
+                      Button(L"ICS Off", [] {}),
+                  },
+                  {
+                      L"",
+                      L"",
+                  },
+                  1),
+          },
+          {
+              L"Button",
+          }),
+      panel(
+          {
+              panel(
+                  {
+                      Button(L"eMMC", [] {}),
+                      Button(L"SDcard", [] {}),
+                  },
+                  {
+                      L"",
+                      L"",
+                  },
+                  1),
+              Slider(L"Filled", &emmc_slider, 0, 100, 1),
+          },
+          {
+              L"Button",
+              L"EMMC %",
+          }),
+      panel(
+          {
+              panel(
+                  {
+                      Button(L"Freeze", [] {}),
+                      Button(L"package", [] {}),
+                  },
+                  {
+                      L"",
+                      L"",
+                  },
+                  1),
+          },
+          {
+              L"Button",
+          }),
+      panel(
+          {
+              panel(
+                  {
+                      Button(L"Wifi On", [] {}),
+                      Button(L"Wifi Off", [] {}),
+                  },
+                  {
+                      L"",
+                      L"",
+                  },
+                  1),
+          },
+          {
+              L"Button",
+          }),
+      panel(
+          {
+              panel(
+                  {
+                      Button(L"Sensor 10", [] {}),
+                      Button(L"Sensor 20", [] {}),
+                  },
+                  {
+                      L"",
+                      L"",
+                  },
+                  1),
+          },
+          {
+              L"Button",
+          }),
+      panel(
+          {
+              panel(
+                  {
+                      Button(L"Password", [] {}),
+                      Button(L"Reset", [] {}),
+                  },
+                  {
+                      L"",
+                      L"",
+                  },
+                  1),
+          },
+          {
+              L"Button",
+          }),
+      panel(
+          {
+              panel(
+                  {
+                      Button(L"Boot", [] {}),
+                      Button(L"Auto Login", [] {}),
+                  },
+                  {
+                      L"",
+                      L"",
+                  },
+                  1),
+          },
+          {
+              L"Button",
+          }),
+      panel(
+          {
+              panel(
+                  {
+                      Button(L"UserLED", [] {}),
+                      Button(L"USR 1", [] {}),
+                  },
+                  {
+                      L"",
+                      L"",
+                  },
+                  1),
+          },
+          {
+              L"Button",
+          }),
+      panel(
+          {
+              panel(
+                  {
+                      Button(L"Firmware Update", [] {}),
+                      Button(L"Update", [] {}),
+                  },
+                  {
+                      L"",
+                      L"",
+                  },
+                  1),
+          },
+          {
+              L"Button",
+          }),
+
+  };
+
+  right_component_2 = {
+      panel(
+          {
+              panel(
+                  {
+                      Button(L"On", [] {}),
+                      Button(L"Off", [] {}),
+                  },
+                  {
+                      L"",
+                      L"",
+                  },
+                  1),
+          },
+          {
+              L"Button",
+          }),
+  };
+
+  right_component_3 = {
+      panel(
+          {
+              panel(
+                  {
+                      Button(L"On", [] {}),
+                      Button(L"Off", [] {}),
+                  },
+                  {
+                      L"",
+                      L"",
+                  },
+                  1),
+          },
+          {
+              L"Button",
+          }),
+      panel(
+          {
+              panel(
+                  {
+                      Button(L"On", [] {}),
+                      Button(L"Off", [] {}),
+                  },
+                  {
+                      L"",
+                      L"",
+                  },
+                  1),
+          },
+          {
+              L"Button",
+          }),
+      panel(
+          {
+              panel(
+                  {
+                      Button(L"On", [] {}),
+                      Button(L"Off", [] {}),
+                  },
+                  {
+                      L"",
+                      L"",
+                  },
+                  1),
+          },
+          {
+              L"Button",
+          }),
+      panel(
+          {
+              panel(
+                  {
+                      Button(L"On", [] {}),
+                      Button(L"Off", [] {}),
+                  },
+                  {
+                      L"",
+                      L"",
+                  },
+                  1),
+          },
+          {
+              L"Button",
+          }),
+      panel(
+          {
+              panel(
+                  {
+                      Button(L"On", [] {}),
+                      Button(L"Off", [] {}),
+                  },
+                  {
+                      L"",
+                      L"",
+                  },
+                  1),
+          },
+          {
+              L"Button",
+          }),
+  };
+
+  tab_selected = 0;
+  tab_container = Container::Tab(
+      {
+          Container::Tab(right_component_1, &tab_1_selected),
+          Container::Tab(right_component_2, &tab_2_selected),
+          Container::Tab(right_component_3, &tab_3_selected),
+      },
+      &tab_selected);
+
+  container = Container::Horizontal({
+      tab_menu,
+      tab_container,
   });
 
-  main_menu = Renderer(main_layout, [this, tab_selection, tab_content,
-                                     quit_button, help_button] {
-    return window(text(L"beagle-config") | bold | color(Color::Cyan1) | hcenter,
-                  vbox(tab_selection->Render() | color(Color::Cyan1) |
-                           bgcolor(Color::Black) | hcenter,
-                       hbox(tab_content->Render() | flex | color(Color::Cyan1) |
-                                bgcolor(Color::Black) | color(Color::Cyan1) |
-                                hcenter | flex,
-                            hflow(set_output_window())) |
-                           flex,
-                       hbox(quit_button->Render() | color(Color::Cyan1) |
-                                bgcolor(Color::Black),
-                            help_button->Render() | color(Color::Cyan1) |
-                                bgcolor(Color::Black)) |
-                           hcenter) |
-                      bgcolor(Color::Black));
+  main_window = Renderer(container, [&] {
+    return window(
+        text(L"beagle-config") | bold | color(Color::Cyan1) | hcenter,
+        hbox(tab_menu->Render() | bgcolor(Color::Black) | color(Color::Cyan1),
+             separator(),
+             tab_container->Render() | flex | bgcolor(Color::Black)) |
+            frame);
   });
 }
 
-Component beagle_window::get_menu() { return main_menu; }
+Component beagle_window::get_menu() {
+  return main_window;
+}
 
-ScreenInteractive *beagle_window::get_screen() { return main_screen; }
-
-int beagle_window::get_selected_number() { return main_selected; }
-
-std::wstring beagle_window::get_selected_option() {
-  return main_entries[main_selected];
+ScreenInteractive* beagle_window::get_screen() {
+  return main_screen;
 }
 
 void beagle_window::execute() {
-  auto w_option = get_selected_option();
   auto str = manage_command("sh ~/Desktop/gsoc/beagle-config/scripts/intro.sh");
   if (str.at(str.size() - 1) == '\n')
     str.pop_back();
   captured_output = to_wstring(str);
 }
 
-std::string beagle_window::manage_command(const char *cmd) {
-
+std::string beagle_window::manage_command(const char* cmd) {
   std::array<char, 128> buffer;
   std::string result;
   std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
@@ -106,17 +380,4 @@ std::string beagle_window::manage_command(const char *cmd) {
     result += buffer.data();
   }
   return result;
-}
-
-std::wstring beagle_window::get_help_string() {
-  if (tab_index == 0)
-    return L"This is system help string for " + main_entries[main_selected] +
-           L"    Aliquam condimentum elit et finibus euismod. Fusce gravida ";
-
-  return L"This is network string for " + network_entries[network_selected] +
-         L"      Sed interdum velit nec massa sollicitudin euismod. Aliquam ";
-}
-
-Elements beagle_window::set_output_window() {
-  return paragraph(get_help_string());
 }
