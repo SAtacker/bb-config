@@ -1,3 +1,6 @@
+cmake_minimum_required (VERSION 3.11)
+project(beagle-config VERSION 0.1.0)
+
 # Adding Subdirectory for beagle-panel
 add_subdirectory(ui/)
 

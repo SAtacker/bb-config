@@ -1,3 +1,6 @@
+#ifndef CUSTOM_CONTAINER_COMPONENT_HPP
+#define CUSTOM_CONTAINER_COMPONENT_HPP
+
 #include <functional>        // for function
 #include <initializer_list>  // for initializer_list
 #include <memory>            // for __shared_ptr_access, shared_ptr, allocator
@@ -11,8 +14,6 @@
 #include "ftxui/component/screen_interactive.hpp"  // for ScreenInteractive, Component
 #include "ftxui/dom/elements.hpp"  // for operator|, Element, separator, bgcolor, color, flex, Decorator, bold, hbox, border, dim
 #include "ftxui/screen/color.hpp"  // for Color, Color::Blue, Color::BlueLight, Color::Red, Color::Yellow             // for Color
-
-#pragma once
 
 using namespace ftxui;
 
@@ -49,3 +50,5 @@ class panel_base : public ComponentBase {
 };
 
 }  // namespace custom_container_component
+
+#endif /* end of include guard: CUSTOM_CONTAINER_COMPONENT_HPP */
