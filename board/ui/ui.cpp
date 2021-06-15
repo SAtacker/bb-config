@@ -83,17 +83,31 @@ beagle_window::beagle_window() {
 
               panel(
                   {
-                      Button(L"ICS On", [] {}),
-                      Button(L"ICS Off", [] {}),
+                      Button(L"Enable Default ICS",
+                             [&] { cmd.set_route_add_rem(true); }),
+                      Button(L"Revert Routing Table",
+                             [&] { cmd.set_route_add_rem(false); }),
                   },
                   {
                       L"",
                       L"",
                   },
                   1),
+              panel(
+                  {
+                      Input(cmd.def_gw_str, L"192.168.6.1"),
+                      Input(cmd.dns_1_str, L"8.8.8.8"),
+                      Input(cmd.dns_2_str, L"8.8.4.4"),
+                  },
+                  {
+                      L"Routing Gateway",
+                      L"Default DNS 1",
+                      L"Default DNS 2",
+                  }),
           },
           {
-              L"Button",
+              L"Basic ICS",
+              L"Customize",
           }),
       panel(
           {
@@ -363,10 +377,7 @@ ScreenInteractive* beagle_window::get_screen() {
 }
 
 void beagle_window::execute() {
-  auto str = manage_command("sh ~/Desktop/gsoc/beagle-config/scripts/intro.sh");
-  if (str.at(str.size() - 1) == '\n')
-    str.pop_back();
-  captured_output = to_wstring(str);
+  cmd.ics();
 }
 
 std::string beagle_window::manage_command(const char* cmd) {

@@ -1,4 +1,5 @@
 #include "custom_container/custom_container.hpp"
+#include "../command_handler/command_handler.hpp"
 
 using namespace ftxui;
 
@@ -49,6 +50,9 @@ class beagle_window {
 
   /* It's the main terminal screen */
   ScreenInteractive* main_screen;
+
+  /* Command Handler */
+  command_handler::cmd_h cmd;
 
   /* This will provide the captured output from the buffer*/
   std::wstring captured_output;

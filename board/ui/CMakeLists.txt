@@ -23,6 +23,7 @@ target_link_libraries(beagle-panel
   PUBLIC ftxui::screen 
   PUBLIC ftxui::dom
   PUBLIC ftxui::component
+  PUBLIC command_handler
 )
 
 set_target_properties(beagle-panel PROPERTIES CXX_STANDARD 17)
