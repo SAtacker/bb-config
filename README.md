@@ -6,6 +6,12 @@ cmake ../board
 make -j8
 ```
 
+## Usage
+
+```
+sudo ./beagle-config --gateway 192.168.6.1 --dns1 8.8.4.4 --dns2 8.8.8.8 -i
+```
+
 ### Current Status
 [![asciicast](https://asciinema.org/a/XPxOSDxAXEvBEK5efNpVU6bEe.svg)](https://asciinema.org/a/XPxOSDxAXEvBEK5efNpVU6bEe)
 
