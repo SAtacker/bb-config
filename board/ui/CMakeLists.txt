@@ -5,8 +5,9 @@ include(FetchContent)
 
 set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
 FetchContent_Declare(ftxui
-  GIT_REPOSITORY https://github.com/ArthurSonzogni/ftxui
-  GIT_TAG 87a1d75bf1c1ee964e8eed4a6686544ae3b44116
+  GIT_REPOSITORY https://github.com/SAtacker/ftxui
+  GIT_TAG 760e4885babcac4d744926a48023bf88b0d4b207
+
 )
 
 FetchContent_GetProperties(ftxui)
@@ -17,7 +18,9 @@ endif()
 
 # ------------------------------------------------------------------------------
 
-add_library(beagle-panel STATIC custom_container/custom_container)
+add_library(beagle-panel STATIC
+  custom_container/custom_container
+)
 
 target_link_libraries(beagle-panel
   PUBLIC ftxui::screen 
