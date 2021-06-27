@@ -29,6 +29,7 @@ add_executable(${PROJECT_NAME}
   ui/panel/panel.hpp
   ui/panel/placeholder/placeholder_impl.cpp
   ui/panel/pru/pru_impl.cpp
+  ui/panel/background_worker/background_worker_impl.cpp
   ui/ui.cpp
   ui/ui.hpp
   ui/focusable.hpp

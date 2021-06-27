@@ -31,11 +31,8 @@ class PanelAdapter : public ComponentBase {
     return vbox({
         title_->Render(),
         separator(),
-        vbox({
-          panel_->Render(),
-          filler()
-        }) | yframe,
-    });
+        vbox({panel_->Render(), filler()}),
+    }) | flex;
   }
 
  private:
@@ -104,10 +101,6 @@ class MainMenu : public ComponentBase {
    Element Render() override {
      auto title =
          text(L" beagle-config ") | bold | color(Color::Cyan1) | hcenter;
-     //return hbox({
-       //group_menu_->Render() | yframe,
-       //group_tab_->Render() | flex
-     //}) | bgcolor(Color::Black);
      return window(title, hbox({
                               vbox({
                                   text(L"  beagle-config"),
@@ -136,6 +129,7 @@ class MainMenu : public ComponentBase {
 }  // namespace
 
 void Loop() {
+  auto screen = ScreenInteractive::Fullscreen();
   std::vector<Group> groups = {
       {L"System",
        {
@@ -163,10 +157,13 @@ void Loop() {
            panel::PlaceHolder(L"Update"),
            panel::PlaceHolder(L"About"),
        }},
+      {L"Demo",
+       {
+           panel::BackgroundWorker(&screen),
+       }},
   };
 
   Component main_menu = Make<MainMenu>(std::move(groups));
-  auto screen = ScreenInteractive::Fullscreen();
   screen.Loop(main_menu);
 }
 

@@ -3,6 +3,7 @@
 
 #include <memory>
 #include "ftxui/component/component.hpp"
+#include "ftxui/component/screen_interactive.hpp"
 
 namespace ui {
 using namespace ftxui;
@@ -22,6 +23,7 @@ Panel PRU();
 Panel GPIO();
 Panel ICS();
 Panel EMMC();
+Panel BackgroundWorker(ScreenInteractive*);
 }  // namespace panel
 }  // namespace ui
 
