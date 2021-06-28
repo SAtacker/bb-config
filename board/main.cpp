@@ -3,10 +3,7 @@
 #include "ui/ui.hpp"
 
 void tui_init() {
-  auto main_ = ui::beagle_window();
-  auto window = main_.get_menu();
-  auto screen = main_.get_screen();
-  screen->Loop(window);
+  ui::Loop();
 }
 
 int main(int argc, char* const argv[]) {
