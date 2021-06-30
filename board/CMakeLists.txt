@@ -23,6 +23,7 @@ endif()
 add_subdirectory(command_handler/)
 add_subdirectory(cli_parser/)
 add_subdirectory(xdg_app_handler/)
+add_subdirectory(connman_handler/)
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_BINARY_DIR}/bin)
 
@@ -35,6 +36,7 @@ add_executable(${PROJECT_NAME}
   ui/panel/placeholder/placeholder_impl.cpp
   ui/panel/pru/pru_impl.cpp
   ui/panel/background_worker/background_worker_impl.cpp
+  ui/panel/wifi/wifi_impl.cpp
   ui/ui.cpp
   ui/ui.hpp
   ui/focusable.hpp
@@ -47,6 +49,7 @@ target_link_libraries(${PROJECT_NAME}
   PRIVATE ftxui::component
   PRIVATE cli_parser
   PRIVATE command_handler
+  PRIVATE connman_handler
 )
 target_include_directories(${PROJECT_NAME} PRIVATE 
   ${CMAKE_CURRENT_SOURCE_DIR}

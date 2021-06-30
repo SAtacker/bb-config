@@ -29,10 +29,11 @@ class PanelAdapter : public ComponentBase {
 
   Element Render() final {
     return vbox({
-        title_->Render(),
-        separator(),
-        vbox({panel_->Render(), filler()}),
-    }) | flex;
+               title_->Render(),
+               separator(),
+               vbox({panel_->Render(), filler()}),
+           }) |
+           flex;
   }
 
  private:
@@ -98,20 +99,20 @@ class MainMenu : public ComponentBase {
     }));
   }
 
-   Element Render() override {
-     auto title =
-         text(L" beagle-config ") | bold | color(Color::Cyan1) | hcenter;
-     return window(title, hbox({
-                              vbox({
-                                  text(L"  beagle-config"),
-                                  separator(),
-                                  group_menu_->Render() | yframe,
-                              }),
-                              separator(),
-                              group_tab_->Render() | flex,
-                          })) |
-            bgcolor(Color::Black);
-   }
+  Element Render() override {
+    auto title =
+        text(L" beagle-config ") | bold | color(Color::Cyan1) | hcenter;
+    return window(title, hbox({
+                             vbox({
+                                 text(L"  beagle-config"),
+                                 separator(),
+                                 group_menu_->Render() | yframe,
+                             }),
+                             separator(),
+                             group_tab_->Render() | flex,
+                         })) |
+           bgcolor(Color::Black);
+  }
 
  private:
   // The nested menu.
@@ -156,6 +157,10 @@ void Loop() {
            panel::PlaceHolder(L"Overlay FS"),
            panel::PlaceHolder(L"Update"),
            panel::PlaceHolder(L"About"),
+       }},
+      {L"WiFi",
+       {
+           panel::WiFi(),
        }},
       {L"Demo",
        {

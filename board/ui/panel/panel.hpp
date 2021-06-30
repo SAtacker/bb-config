@@ -23,6 +23,7 @@ Panel PRU();
 Panel GPIO();
 Panel ICS();
 Panel EMMC();
+Panel WiFi();
 Panel BackgroundWorker(ScreenInteractive*);
 }  // namespace panel
 }  // namespace ui
