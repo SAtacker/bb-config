@@ -12,9 +12,10 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <thread>
 #include <unordered_map>
 #include <vector>
-#include <thread>
+#include "process.hpp"
 
 /* ConnMan service provisioning file */
 #define CONNMAN_SERVICE_F_PATH "/var/lib/connman"

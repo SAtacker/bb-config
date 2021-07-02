@@ -106,6 +106,21 @@ void connman_h::empty_file(const char* path) {
 void connman_h::shell_helper(const char* cmd) {
   result = "";
   std::array<char, 128> buffer;
+
+  procxx::process shell{"sh"};
+  procxx::process::limits_t limits;
+  limits.cpu_time(1);
+
+  shell.add_argument("-c");
+  shell.add_argument(cmd);
+
+  shell.limit(limits);
+  shell.exec();
+
+  std::string line;
+  while (std::getline(shell.output(), line))
+    result = result + line + "\n";
+
   /* ----------------------------------------------------------------------
   // This is not thread safe
   std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
@@ -116,6 +131,10 @@ void connman_h::shell_helper(const char* cmd) {
     result += buffer.data();
   }
    ---------------------------------------------------------------------- */
+
+  // Below code uses STDOUT and STDERR which are same as that of FTXUI and
+  // break the UI
+  /* ----------------------------------------------------------------------
   pid_t pid = 0;
   int pipefd[2];
   FILE* output;
@@ -123,7 +142,8 @@ void connman_h::shell_helper(const char* cmd) {
   pipe(pipefd);  // create a pipe
   pid = fork();  // span a child process
   if (pid == 0) {
-    // Child. Let's redirect its standard output to our pipe and replace process
+    // Child. Let's redirect its standard output to our pipe and replace
+    process
     // with tail
     close(pipefd[0]);
     dup2(pipefd[1], STDOUT_FILENO);
@@ -140,13 +160,13 @@ void connman_h::shell_helper(const char* cmd) {
     result += buffer.data();
   }
   fclose(output);
+   ---------------------------------------------------------------------- */
 }
 
 void connman_h::get_service_names() {
   if (!wifi_status()) {
     /* Enable wifi */
     shell_helper("connmanctl enable wifi");
-    std::this_thread::sleep_for(std::chrono::seconds(1));
   }
 
   /* Scan wifi */

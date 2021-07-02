@@ -160,7 +160,7 @@ void Loop() {
        }},
       {L"WiFi",
        {
-           panel::WiFi(),
+           panel::WiFi(&screen),
        }},
       {L"Demo",
        {
