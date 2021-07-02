@@ -12,7 +12,7 @@ static constexpr const char XDG_CONFIG_DIRS_DEFAULT[]{"/etc/xdg"};
 
 namespace env {
 static std::string get(const std::string& name,
-                            const std::string& default_value);
+                       const std::string& default_value);
 static std::string get(const std::string& name);
 }  // namespace env
 

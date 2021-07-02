@@ -39,7 +39,6 @@ int cmd_h::shell_h(const char* cmd, std::string check) {
 }
 
 int cmd_h::route_h() {
-
   /* Load Config before adding*/
   load_config();
 
@@ -75,8 +74,8 @@ int cmd_h::route_h() {
   route.rt_flags = RTF_UP | RTF_GATEWAY;
   route.rt_metric = 0;
 
-  /* 
-  It is true then it adds resolv.conf and route 
+  /*
+  It is true then it adds resolv.conf and route
   Else it deletes the route stored in beagle.conf
   */
   if (route_add) {
@@ -269,7 +268,7 @@ int cmd_h::route_h() {
 int cmd_h::ics() {
   load_config();
 
-// TODO : Verify the strings
+  // TODO : Verify the strings
   if (strlen(def_gw_str) < sizeof(RTGATEWAY)) {
     strcpy(def_gw_str, RTGATEWAY);
   }
@@ -297,7 +296,6 @@ void cmd_h::store_config() {
   if (!config_file.is_open()) {
     std::cout << "Store :: Error opening config file\n";
   } else {
-
     /* Updating the current configuration and adding timestamp */
     std::time_t time_ =
         std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
@@ -314,7 +312,6 @@ void cmd_h::store_config() {
 }
 
 void cmd_h::load_config() {
-
   /* Checking and creating directory */
   if (!std::filesystem::is_directory(user_share_config_path)) {
     try {

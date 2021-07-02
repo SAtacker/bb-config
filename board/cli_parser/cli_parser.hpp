@@ -2,8 +2,8 @@
 #define CLI_PARSER_HPP
 
 #include <getopt.h>
-#include <iostream>
 #include <functional>
+#include <iostream>
 #include <vector>
 
 namespace cli_parser {
@@ -18,7 +18,8 @@ class args_parser {
 
   /* Vectors to get functions from main() */
   std::vector<std::function<void(void)>> func_vec;
-  std::vector<std::function<void(char*,int)>> func_c_i_vec;
+  std::vector<std::function<void(char*, int)>> func_c_i_vec;
+
  public:
   args_parser();
 
@@ -29,7 +30,7 @@ class args_parser {
   void add_function(std::function<void(void)>);
 
   /* Adds void(char*,int) functions */
-  void add_function(std::function<void(char*,int)>);
+  void add_function(std::function<void(char*, int)>);
   ~args_parser();
 };
 
