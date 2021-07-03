@@ -70,7 +70,7 @@ class MainMenu : public ComponentBase {
     menu_.resize(menu_group.size());
     tab_.resize(menu_group.size());
 
-    for (int i = 0; i < menu_group.size(); ++i) {
+    for (size_t i = 0; i < menu_group.size(); ++i) {
       menu_[i] = Menu(&menu_entries_[i], &index_[i]);
       tab_[i] = Container::Tab({}, &index_[i]);
       index_[i] = 0;
