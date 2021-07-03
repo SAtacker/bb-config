@@ -29,10 +29,11 @@ class PanelAdapter : public ComponentBase {
 
   Element Render() final {
     return vbox({
-        title_->Render(),
-        separator(),
-        vbox({panel_->Render(), filler()}),
-    }) | flex;
+               title_->Render(),
+               separator(),
+               vbox({panel_->Render(), filler()}),
+           }) |
+           flex;
   }
 
  private:
@@ -99,11 +100,16 @@ class MainMenu : public ComponentBase {
   }
 
    Element Render() override {
+     iteration_++;
      auto title =
          text(L" beagle-config ") | bold | color(Color::Cyan1) | hcenter;
      return window(title, hbox({
                               vbox({
-                                  text(L"  beagle-config"),
+                                  hbox({
+                                      spinner(5, iteration_),
+                                      text(L"  beagle-config"),
+                                      filler(),
+                                  }),
                                   separator(),
                                   group_menu_->Render() | yframe,
                               }),
@@ -124,6 +130,9 @@ class MainMenu : public ComponentBase {
   int group_index_ = 0;
   Component group_menu_;
   Component group_tab_;
+
+  // Allow visualizing when the UI is updated.
+  int iteration_ = 0;
 };
 
 }  // namespace
