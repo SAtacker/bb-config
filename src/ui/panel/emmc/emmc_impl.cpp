@@ -8,8 +8,7 @@ namespace ui {
 class EMMCImpl : public PanelBase {
  public:
   EMMCImpl() {
-    Add(Renderer([this]{
-      auto style = Focused() ? inverted : nothing;
+    Add(Renderer([] {
       return vbox({
           hbox(text(L"  SD card:["), gauge(0.5f), text(L"] (50%)")),
           hbox(text(L"EMMC card:["), gauge(0.75f), text(L"] (75%)")),

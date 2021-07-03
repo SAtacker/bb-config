@@ -1,6 +1,6 @@
 #include "ui/ui.hpp"
 
-int main(int argc, const char* argv[]) {
+int main() {
   ui::Loop();
   return 0;
 }

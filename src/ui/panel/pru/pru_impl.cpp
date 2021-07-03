@@ -10,11 +10,11 @@ class PRUImpl : public PanelBase {
  public:
   PRUImpl() {
     Add(Container::Vertical({
-      Container::Horizontal({
-        Button(L"PRU On", []{}),
-        Button(L"PRU Off", []{}),
-      }),
-      Button(L"Upload", [] {}),
+        Container::Horizontal({
+            Button(L"PRU On", [] {}),
+            Button(L"PRU Off", [] {}),
+        }),
+        Button(L"Upload", [] {}),
     }));
   }
   ~PRUImpl() = default;
@@ -22,7 +22,9 @@ class PRUImpl : public PanelBase {
 };
 
 namespace panel {
-Panel PRU() { return Make<PRUImpl>(); }
+Panel PRU() {
+  return Make<PRUImpl>();
+}
 
 }  // namespace panel
 }  // namespace ui
