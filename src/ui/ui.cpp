@@ -71,7 +71,7 @@ class MainMenu : public ComponentBase {
     menu_.resize(menu_group.size());
     tab_.resize(menu_group.size());
 
-    for (int i = 0; i < menu_group.size(); ++i) {
+    for (size_t i = 0; i < menu_group.size(); ++i) {
       menu_[i] = Menu(&menu_entries_[i], &index_[i]);
       tab_[i] = Container::Tab({}, &index_[i]);
       index_[i] = 0;
@@ -99,20 +99,25 @@ class MainMenu : public ComponentBase {
     }));
   }
 
-  Element Render() override {
-    auto title =
-        text(L" beagle-config ") | bold | color(Color::Cyan1) | hcenter;
-    return window(title, hbox({
-                             vbox({
-                                 text(L"  beagle-config"),
-                                 separator(),
-                                 group_menu_->Render() | yframe,
-                             }),
-                             separator(),
-                             group_tab_->Render() | flex,
-                         })) |
-           bgcolor(Color::Black);
-  }
+   Element Render() override {
+     iteration_++;
+     auto title =
+         text(L" beagle-config ") | bold | color(Color::Cyan1) | hcenter;
+     return window(title, hbox({
+                              vbox({
+                                  hbox({
+                                      spinner(5, iteration_),
+                                      text(L"  beagle-config"),
+                                      filler(),
+                                  }),
+                                  separator(),
+                                  group_menu_->Render() | yframe,
+                              }),
+                              separator(),
+                              group_tab_->Render() | flex,
+                          })) |
+            bgcolor(Color::Black);
+   }
 
  private:
   // The nested menu.
@@ -125,6 +130,9 @@ class MainMenu : public ComponentBase {
   int group_index_ = 0;
   Component group_menu_;
   Component group_tab_;
+
+  // Allow visualizing when the UI is updated.
+  int iteration_ = 0;
 };
 
 }  // namespace
@@ -158,7 +166,7 @@ void Loop() {
            panel::PlaceHolder(L"Update"),
            panel::PlaceHolder(L"About"),
        }},
-      {L"WiFi",
+       {L"WiFi",
        {
            panel::WiFi(&screen),
        }},

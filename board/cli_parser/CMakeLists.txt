@@ -1,1 +1,0 @@
-add_library(cli_parser STATIC cli_parser)

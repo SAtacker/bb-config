@@ -49,8 +49,6 @@ class WiFiImpl : public PanelBase {
     if (wifi_scan.joinable()) {
       wifi_scan.join();
     } else {
-      receiver_->MakeSender()->Send(L"Calling...");
-      screen_->PostEvent(Event::Custom);
       wifi_scan = std::thread([&] {
         for (auto name : connman_interface->get_wifi_names()) {
           receiver_->MakeSender()->Send(to_wstring(name));
@@ -64,7 +62,7 @@ class WiFiImpl : public PanelBase {
   std::string selected_wifi;
   std::vector<std::string> names;
   std::thread wifi_scan;
-  std::unique_ptr<connman_handler::connman_h> connman_interface;
+  std::unique_ptr<connman_handler::connman_h> connman_interface=std::make_unique<connman_handler::connman_h>();
   Component scan_button;
   std::vector<std::wstring> received_;
   Receiver<std::wstring> receiver_ = MakeReceiver<std::wstring>();

@@ -105,7 +105,6 @@ void connman_h::empty_file(const char* path) {
 
 void connman_h::shell_helper(const char* cmd) {
   result = "";
-  std::array<char, 128> buffer;
 
   procxx::process shell{"sh"};
   procxx::process::limits_t limits;
@@ -252,21 +251,21 @@ std::string connman_h::reduce(const std::string& str,
                               const std::string& fill,
                               const std::string& whitespace) {
   // trim first
-  auto result = trim(str, whitespace);
+  auto result_local = trim(str, whitespace);
 
   // replace sub ranges
-  auto beginSpace = result.find_first_of(whitespace);
+  auto beginSpace = result_local.find_first_of(whitespace);
   while (beginSpace != std::string::npos) {
-    const auto endSpace = result.find_first_not_of(whitespace, beginSpace);
+    const auto endSpace = result_local.find_first_not_of(whitespace, beginSpace);
     const auto range = endSpace - beginSpace;
 
-    result.replace(beginSpace, range, fill);
+    result_local.replace(beginSpace, range, fill);
 
     const auto newStart = beginSpace + fill.length();
-    beginSpace = result.find_first_of(whitespace, newStart);
+    beginSpace = result_local.find_first_of(whitespace, newStart);
   }
 
-  return result;
+  return result_local;
 }
 
 int connman_h::connect_wifi() {
@@ -286,7 +285,7 @@ int connman_h::connect_wifi() {
     return -1;
   }
   std::cout << "Calling store: " << file_path << std::endl;
-  store_file(file_path.c_str());
+  return store_file(file_path.c_str());
 }
 
 void connman_h::disconnect_wifi() {

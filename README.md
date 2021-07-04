@@ -13,7 +13,7 @@ sudo ./beagle-config --gateway 192.168.6.1 --dns1 8.8.4.4 --dns2 8.8.8.8 -i
 ```
 
 ### Current Status
-[![asciicast](https://asciinema.org/a/422619.svg)](https://asciinema.org/a/422619)
+[![asciicast](https://asciinema.org/a/4shkKRstEIZuurDVEqghk3KsE.svg)](https://asciinema.org/a/4shkKRstEIZuurDVEqghk3KsE)
 
 ### For Arm
 
@@ -58,4 +58,4 @@ sudo ln -s /lib/ld-linux-armhf.so.3 /lib/ld-linux.so.3
 ./beagle-config
 ```
 
-[![asciicast](https://asciinema.org/a/422619.svg)](https://asciinema.org/a/422619)
+[![asciicast](https://asciinema.org/a/i0CJ56NdL6e28jXl31RQuRYUl.svg)](https://asciinema.org/a/i0CJ56NdL6e28jXl31RQuRYUl)
