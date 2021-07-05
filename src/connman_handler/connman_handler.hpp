@@ -1,9 +1,12 @@
 #ifndef CONNMAN_HANDLER_HPP
 #define CONNMAN_HANDLER_HPP
 
-#include <net/if.h>
+#include <errno.h>
+#include <linux/if.h>
+#include <linux/wireless.h>
 #include <string.h>
 #include <sys/ioctl.h>
+#include <sys/socket.h>
 #include <unistd.h>
 #include <algorithm>
 #include <chrono>
@@ -115,9 +118,6 @@ class connman_h {
   /* Comment and store */
   void empty_file(const char* path = CONNMAN_SERVICE_F_PATH "/connman.conf");
 
-  /* Warning: Not thread safe */
-  void shell_helper(const char*);
-
   std::string trim(const std::string& str,
                    const std::string& whitespace = " \t");
   std::string reduce(const std::string& str,
@@ -131,6 +131,7 @@ class connman_h {
   void display_service_names();
   int connect_wifi();
   void disconnect_wifi();
+  void shell_helper(const char*);
 
   /* Get a vector of names of wifi*/
   std::vector<std::string> get_wifi_names();

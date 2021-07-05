@@ -99,25 +99,25 @@ class MainMenu : public ComponentBase {
     }));
   }
 
-   Element Render() override {
-     iteration_++;
-     auto title =
-         text(L" beagle-config ") | bold | color(Color::Cyan1) | hcenter;
-     return window(title, hbox({
-                              vbox({
-                                  hbox({
-                                      spinner(5, iteration_),
-                                      text(L"  beagle-config"),
-                                      filler(),
-                                  }),
-                                  separator(),
-                                  group_menu_->Render() | yframe,
-                              }),
-                              separator(),
-                              group_tab_->Render() | flex,
-                          })) |
-            bgcolor(Color::Black);
-   }
+  Element Render() override {
+    iteration_++;
+    auto title =
+        text(L" beagle-config ") | bold | color(Color::Cyan1) | hcenter;
+    return window(title, hbox({
+                             vbox({
+                                 hbox({
+                                     spinner(5, iteration_),
+                                     text(L"  beagle-config"),
+                                     filler(),
+                                 }),
+                                 separator(),
+                                 group_menu_->Render() | yframe,
+                             }),
+                             separator(),
+                             group_tab_->Render() | flex,
+                         })) |
+           bgcolor(Color::Black);
+  }
 
  private:
   // The nested menu.
@@ -166,7 +166,7 @@ void Loop() {
            panel::PlaceHolder(L"Update"),
            panel::PlaceHolder(L"About"),
        }},
-       {L"WiFi",
+      {L"WiFi",
        {
            panel::WiFi(&screen),
        }},

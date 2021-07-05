@@ -59,7 +59,7 @@ void connman_h::parse_file(const char* path) {
 int connman_h::store_file(const char* path) {
   std::cout << "Storing in " << path << std::endl;
   std::fstream connman_config(
-      path, std::fstream::in | std::fstream::out | std::fstream::app);
+      path, std::fstream::in | std::fstream::out | std::fstream::trunc);
   if (!connman_config.is_open()) {
     std::cerr << "Error opening connman config " << path << std::endl;
     return -1;
@@ -69,12 +69,15 @@ int connman_h::store_file(const char* path) {
     auto ti = std::ctime(&time_);
     connman_config << "# Edited by beagle config: " << ti << "\n";
     for (auto sname : lookup_table) {
-      connman_config << "[service_" << sname.first << "]"
-                     << "\n";
-      for (auto name_value : sname.second) {
-        connman_config << name_value.first << "=" << name_value.second << "\n";
+      if (sname.second[SERVICE_KEY_NAME] == data.name) {
+        connman_config << "[service_" << sname.first << "]"
+                       << "\n";
+        for (auto name_value : sname.second) {
+          connman_config << name_value.first << " = " << name_value.second
+                         << "\n";
+        }
+        connman_config << "\n";
       }
-      connman_config << "\n";
     }
   }
   return 0;
@@ -83,7 +86,7 @@ int connman_h::store_file(const char* path) {
 void connman_h::empty_file(const char* path) {
   std::cout << "Emptying " << path << std::endl;
   std::fstream connman_config(
-      path, std::fstream::in | std::fstream::out | std::fstream::app);
+      path, std::fstream::in | std::fstream::out | std::fstream::trunc);
   if (!connman_config.is_open()) {
     std::cerr << "Emptying: Error opening connman config " << path << std::endl;
   } else {
@@ -92,13 +95,15 @@ void connman_h::empty_file(const char* path) {
     auto ti = std::ctime(&time_);
     connman_config << "# Edited by beagle config: " << ti << "\n";
     for (auto sname : lookup_table) {
-      connman_config << "#[service_" << sname.first << "]"
-                     << "\n";
-      for (auto name_value : sname.second) {
-        connman_config << "#" << name_value.first << "=" << name_value.second
+      if (sname.second[SERVICE_KEY_NAME] == data.name) {
+        connman_config << "#[service_" << sname.first << "]"
                        << "\n";
+        for (auto name_value : sname.second) {
+          connman_config << "#" << name_value.first << " = "
+                         << name_value.second << "\n";
+        }
+        connman_config << "\n";
       }
-      connman_config << "\n";
     }
   }
 }
@@ -256,7 +261,8 @@ std::string connman_h::reduce(const std::string& str,
   // replace sub ranges
   auto beginSpace = result_local.find_first_of(whitespace);
   while (beginSpace != std::string::npos) {
-    const auto endSpace = result_local.find_first_not_of(whitespace, beginSpace);
+    const auto endSpace =
+        result_local.find_first_not_of(whitespace, beginSpace);
     const auto range = endSpace - beginSpace;
 
     result_local.replace(beginSpace, range, fill);
@@ -291,8 +297,6 @@ int connman_h::connect_wifi() {
 void connman_h::disconnect_wifi() {
   std::string file_path;
   get_service_names();
-  if (wifi_status())
-    shell_helper("connmanctl disable wifi");
   for (auto n : service_names) {
     if (n.first == data.name) {
       file_path = CONNMAN_SERVICE_F_PATH "/" + n.second + ".config";
@@ -303,7 +307,6 @@ void connman_h::disconnect_wifi() {
     }
   }
   std::cout << "Calling empty: " << file_path << std::endl;
-  ;
   empty_file(file_path.c_str());
 }
 
@@ -341,6 +344,26 @@ bool connman_h::wifi_status() {
 }
 
 std::string connman_h::get_active_name() {
+  int sockfd;
+  char* id;
+  id = new char[IW_ESSID_MAX_SIZE + 1];
+
+  struct iwreq wreq;
+  memset(&wreq, 0, sizeof(struct iwreq));
+  wreq.u.essid.length = IW_ESSID_MAX_SIZE + 1;
+
+  sprintf(wreq.ifr_name, "wlan0");
+
+  if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
+    return active_name = "Error: " + *strerror(errno);
+  }
+
+  wreq.u.essid.pointer = id;
+  if (ioctl(sockfd, SIOCGIWESSID, &wreq) == -1) {
+    return active_name = "Error: " + *strerror(errno);
+  }
+  close(sockfd);
+  active_name = (char*)wreq.u.essid.pointer;
   if (active_name.length())
     return active_name;
   return active_name = "None";
