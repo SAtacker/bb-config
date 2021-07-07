@@ -133,7 +133,10 @@ class connman_h {
   void disconnect_wifi();
   void shell_helper(const char*);
 
-  /* Get a vector of names of wifi*/
+  // Get a vector of names of wifi
+  //
+  // TODO(satacker) Explain why calling this function is thread safe. Probably
+  // not thread safe. We probably should turn this into a pure function.
   std::vector<std::string> get_wifi_names();
 
   /* Get name of active wifi */
