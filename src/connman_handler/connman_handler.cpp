@@ -346,6 +346,7 @@ bool connman_h::wifi_status() {
 std::string connman_h::get_active_name() {
   int sockfd;
   char* id;
+  // TODO(satacker): This is leaked. Fix this.
   id = new char[IW_ESSID_MAX_SIZE + 1];
 
   struct iwreq wreq;
@@ -355,12 +356,12 @@ std::string connman_h::get_active_name() {
   sprintf(wreq.ifr_name, "wlan0");
 
   if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
-    return active_name = "Error: " + *strerror(errno);
+    return active_name = std::string("Error: ") + *strerror(errno);
   }
 
   wreq.u.essid.pointer = id;
   if (ioctl(sockfd, SIOCGIWESSID, &wreq) == -1) {
-    return active_name = "Error: " + *strerror(errno);
+    return active_name = std::string("Error: ") + *strerror(errno);
   }
   close(sockfd);
   active_name = (char*)wreq.u.essid.pointer;
