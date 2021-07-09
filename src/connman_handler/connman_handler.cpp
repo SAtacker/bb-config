@@ -345,9 +345,7 @@ bool connman_h::wifi_status() {
 
 std::string connman_h::get_active_name() {
   int sockfd;
-  char* id;
-  // TODO(satacker): This is leaked. Fix this.
-  id = new char[IW_ESSID_MAX_SIZE + 1];
+  char id[IW_ESSID_MAX_SIZE + 1];
 
   struct iwreq wreq;
   memset(&wreq, 0, sizeof(struct iwreq));
