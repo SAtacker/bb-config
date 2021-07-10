@@ -1,3 +1,4 @@
+#include <fstream>
 #include "ftxui/component/component.hpp"
 #include "ftxui/dom/elements.hpp"
 #include "ui/panel/panel.hpp"
@@ -9,111 +10,141 @@ using namespace ftxui;
 
 namespace ui {
 
-class LedImpl : public PanelBase {
- public:
-  LedImpl() {
-    shell_helper("ls -C1 " LEDS_PATH, &result);
-    while (result.length()) {
-      auto pos = result.find('\n');
-      if (pos != std::string::npos) {
-        auto name = result.substr(0, pos);
-        if (name != "\n")
-          names.push_back(name);
-        result.erase(0, pos + 1);
-      }
-    }
-
-    on_time_vec.resize(names.size());
-    multiplier_vec.resize(names.size());
-
-    for (size_t i = 0; i < names.size(); i++) {
-      auto name = names[i];
-      shell_helper(("cat " LEDS_PATH + name + "/brightness").data(), &result);
-      result.pop_back();
-      if (result == "0") {
-        states[name] = false;
-
-      } else {
-        states[name] = true;
-      }
-
-      toggle_buttons.push_back(
-          Button(to_wstring(name), [=] { toggleLed(name); }));
-      trigger_buttons.push_back(Button(L"Trigger" + to_wstring(name),
-                                       [=] { setTriggerTime(name, i); }));
-      time_on_sliders.push_back(Slider(L"Delay On Time", &on_time_vec[i],
-                                       (float)0, (float)25, (float)1));
-      multiplier_sliders.push_back(
-          Slider(L"Multiplier", &multiplier_vec[i], 0, 40, 1));
-    }
-    Components toggle_component_h;
-    for (size_t i = 0; i < names.size(); i++) {
-      toggle_component_h.push_back(Container::Horizontal({
-          toggle_buttons[i],
-          trigger_buttons[i],
-          multiplier_sliders[i],
-          time_on_sliders[i],
-      }));
-    }
-    Add(Container::Vertical(toggle_component_h));
-  }
-  ~LedImpl() = default;
-  std::wstring Title() override { return L"USR LEDs"; }
-
- private:
-  /* Toggle the "On/Off" status */
-  void toggleLed(std::string name) {
-    auto str = "echo '" + std::to_string(!(states[name])) + "' > " LEDS_PATH +
-               name + "/brightness";
-    shell_helper(str.c_str());
-    states[name] = !states[name];
-  }
-
-  /* Enable trigger and set "delay_on" and "delay_off" */
-  void setTriggerTime(std::string name, int i) {
-    auto str = "echo 'timer' > " LEDS_PATH + name + "/trigger";
-    shell_helper(str.c_str());
-    str = "echo '" + std::to_string(int(on_time_vec[i] * multiplier_vec[i])) +
-          "' > " LEDS_PATH + name + "/delay_on";
-    shell_helper(str.c_str());
-    str = "echo '" +
-          std::to_string(int((25 - on_time_vec[i]) * multiplier_vec[i])) +
-          "' > " LEDS_PATH + name + "/delay_off";
-    shell_helper(str.c_str());
-  }
-
-  /* Store result of command */
-  std::string result;
-
-  /* Names of leds dependent on the board */
+std::vector<std::string> FindLEDs() {
   std::vector<std::string> names;
 
-  /* States of leds */
-  std::unordered_map<std::string, bool> states;
+  procxx::process ls{"ls"};
+  ls.add_argument("-C1");
+  ls.add_argument("/sys/class/leds/");
+  ls.exec();
 
-  /* Timer "On" time */
-  std::vector<float> on_time_vec;
+  std::string name;
+  while (std::getline(ls.output(), name))
+    names.push_back(name);
+  return names;
+}
 
-  /* Multiplier for total time */
-  std::vector<int> multiplier_vec;
+// A component displaying an individual LED.
+class Led : public ComponentBase {
+ public:
+  Led(std::string name) : name_(name), file_path_("/sys/class/leds/" + name) {
+    GetBrightness();
+    GetTrigger();
 
-  /* Toggle Led On/Off  */
-  Components toggle_buttons;
+    Add(Container::Vertical({
+        button_toggle_,
+        Container::Vertical({
+            slider_period_,
+            slider_delay,
+            button_trigger_timer_,
+        }),
+    }));
+  }
 
-  /* Set Trigger buttons */
-  Components trigger_buttons;
+ private:
+  void GetBrightness() {
+    std::ifstream(file_path_ + "/brightness") >> brightness_;
+  }
 
-  /* Sldiers for "On" time */
-  Components time_on_sliders;
+  void GetTrigger() {
+    std::ifstream file(file_path_ + "/trigger");
+    std::string trigger;
+    std::getline(file, trigger);
+    size_t left = trigger.find('[');
+    size_t right = trigger.find(']');
+    if (left < right && left != std::string::npos && right != std::string::npos)
+      trigger_ = trigger.substr(left + 1, right - left - 1);
+    else
+      trigger_ = "error";
+  }
 
-  /* Multipliers for "On" time */
-  Components multiplier_sliders;
+  void Toggle() {
+    brightness_ = !brightness_;
+    std::ofstream(file_path_ + "/brightness") << brightness_;
+  }
+
+  void TriggerTimer() {
+    std::ofstream(file_path_ + "/trigger") << "timer";
+    std::ofstream(file_path_ + "/delay_on")
+        << std::to_string(int(ratio_ * period_));
+    std::ofstream(file_path_ + "/delay_off")
+        << std::to_string(int((1.f - ratio_) * period_));
+    GetTrigger();
+  }
+
+  Element Render() override {
+    return vbox({
+        text(L"Name      :" + to_wstring(name_)),
+        text(L"Brightness:" + to_wstring(brightness_)),
+        text(L"Trigger   :" + to_wstring(trigger_)),
+        button_toggle_->Render(),
+        hbox({
+            slider_period_->Render(),
+            text(to_wstring(period_) + L"ms") | size(WIDTH, EQUAL, 6),
+        }),
+        hbox({
+            slider_delay->Render(),
+            text(to_wstring(int(ratio_ * 100)) + L"%") | size(WIDTH, EQUAL, 6),
+        }),
+        button_trigger_timer_->Render(),
+    });
+  }
+
+  const std::string name_;
+  const std::string file_path_;
+  int brightness_ = 0;
+  int period_ = 20;
+  float ratio_ = 0.5f;
+  std::string trigger_;
+
+  Component button_toggle_ = Button(L"Toggle", [this] { Toggle(); });
+  Component button_trigger_timer_ =
+      Button(L"Trigger on timer ", [this] { TriggerTimer(); });
+  Component slider_period_ = Slider(L"Period      :", &period_, 0, 2000, 50);
+  Component slider_delay = Slider(L"Ratio ON/OFF:", &ratio_, 0.f, 1.f, 0.05f);
+};
+
+// A panel displaying all the LEDs.
+class LedPanel : public PanelBase {
+ public:
+  LedPanel() {
+    for (auto name : FindLEDs()) {
+      names_.push_back(to_wstring(name));
+      led_tab_->Add(Make<Led>(name));
+    }
+
+    Add(Container::Vertical({
+        radiobox_,
+        led_tab_,
+    }));
+  }
+  ~LedPanel() override = default;
+
+ private:
+  Element Render() override {
+    return vbox({
+               text(L"Select a LED:"),
+               hbox(text(L" "), radiobox_->Render()),
+               separator(),
+               led_tab_->Render(),
+           }) |
+           frame;
+  }
+
+  std::wstring Title() override { return L"LEDs"; }
+
+  int selected_led_ = 0;
+  std::vector<std::wstring> names_;
+
+  Component radiobox_ = Radiobox(&names_, &selected_led_);
+  Component led_tab_ = Container::Tab({}, &selected_led_);
 };
 
 namespace panel {
 Panel Led() {
-  return Make<LedImpl>();
+  return Make<LedPanel>();
 }
 
 }  // namespace panel
+
 }  // namespace ui
