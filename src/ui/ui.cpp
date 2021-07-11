@@ -99,25 +99,25 @@ class MainMenu : public ComponentBase {
     }));
   }
 
-   Element Render() override {
-     iteration_++;
-     auto title =
-         text(L" beagle-config ") | bold | color(Color::Cyan1) | hcenter;
-     return window(title, hbox({
-                              vbox({
-                                  hbox({
-                                      spinner(5, iteration_),
-                                      text(L"  beagle-config"),
-                                      filler(),
-                                  }),
-                                  separator(),
-                                  group_menu_->Render() | yframe,
-                              }),
-                              separator(),
-                              group_tab_->Render() | flex,
-                          })) |
-            bgcolor(Color::Black);
-   }
+  Element Render() override {
+    iteration_++;
+    auto title =
+        text(L" beagle-config ") | bold | color(Color::Cyan1) | hcenter;
+    return window(title, hbox({
+                             vbox({
+                                 hbox({
+                                     spinner(5, iteration_),
+                                     text(L"  beagle-config"),
+                                     filler(),
+                                 }),
+                                 separator(),
+                                 group_menu_->Render() | yframe,
+                             }),
+                             separator(),
+                             group_tab_->Render() | flex,
+                         })) |
+           bgcolor(Color::Black);
+  }
 
  private:
   // The nested menu.
@@ -146,12 +146,12 @@ void Loop() {
            panel::GPIO(),
            panel::ICS(),
            panel::EMMC(),
+           panel::Led(),
            panel::PlaceHolder(L"Freeze Packages"),
            panel::PlaceHolder(L"Wireless Configurations"),
            panel::PlaceHolder(L"Sensor Stats and Configurations "),
            panel::PlaceHolder(L"Password"),
            panel::PlaceHolder(L"Boot / Auto login "),
-           panel::PlaceHolder(L"User LED"),
            panel::PlaceHolder(L"Firmware Update"),
        }},
       {L"Display",
