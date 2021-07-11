@@ -2,10 +2,7 @@
 #include <iostream>
 #include <thread>
 #include <vector>
-#include "ftxui/component/container.hpp"
-#include "ftxui/component/menu.hpp"
 #include "ftxui/component/screen_interactive.hpp"
-#include "ftxui/component/toggle.hpp"
 #include "ftxui/screen/string.hpp"
 #include "ui/focusable.hpp"
 #include "ui/panel/panel.hpp"
@@ -71,20 +68,22 @@ class MainMenu : public ComponentBase {
     menu_.resize(menu_group.size());
     tab_.resize(menu_group.size());
 
+    MenuOption menu_option;
+    menu_option.style_selected =
+        bold | color(Color::Chartreuse1) | bgcolor(Color::Black);
+    menu_option.style_focused =
+        color(Color::Black) | bgcolor(Color::Chartreuse1);
+    menu_option.style_selected_focused =
+        bold | color(Color::Black) | bgcolor(Color::Chartreuse1);
+
     for (size_t i = 0; i < menu_group.size(); ++i) {
-      menu_[i] = Menu(&menu_entries_[i], &index_[i]);
+      menu_[i] = Menu(&menu_entries_[i], &index_[i], menu_option);
       tab_[i] = Container::Tab({}, &index_[i]);
       index_[i] = 0;
       for (auto it : menu_group[i].groups) {
         menu_entries_[i].push_back(it->Title());
         tab_[i]->Add(Make<PanelAdapter>(std::move(it)));
       }
-      MenuBase::From(menu_[i])->selected_style =
-          bold | color(Color::Chartreuse1) | bgcolor(Color::Black);
-      MenuBase::From(menu_[i])->focused_style =
-          color(Color::Black) | bgcolor(Color::Chartreuse1);
-      MenuBase::From(menu_[i])->selected_focused_style =
-          bold | color(Color::Black) | bgcolor(Color::Chartreuse1);
 
       menu_[i] = Header(menu_group[i].title, menu_[i]);
     }
