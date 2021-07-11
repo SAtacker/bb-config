@@ -2,6 +2,7 @@
 #include "ftxui/component/component.hpp"
 #include "ftxui/dom/elements.hpp"
 #include "ui/panel/panel.hpp"
+#include <sstream>
 #include "utils.hpp"
 
 #define LEDS_PATH "/sys/class/leds/"
@@ -28,10 +29,10 @@ std::vector<std::string> FindLEDs() {
 class Led : public ComponentBase {
  public:
   Led(std::string name) : name_(name), file_path_("/sys/class/leds/" + name) {
-    GetBrightness();
-    GetTrigger();
+    FetchState();
 
     Add(Container::Vertical({
+        trigger_list_,
         button_toggle_,
         Container::Vertical({
             slider_period_,
@@ -42,14 +43,23 @@ class Led : public ComponentBase {
   }
 
  private:
-  void GetBrightness() {
+  void FetchState() {
     std::ifstream(file_path_ + "/brightness") >> brightness_;
-  }
+    trigger_entries_.clear();
+    trigger_selected_ = 0;
 
-  void GetTrigger() {
     std::ifstream file(file_path_ + "/trigger");
     std::string trigger;
     std::getline(file, trigger);
+    
+    std::string entry;
+    std::stringstream ss(trigger);
+    while (std::getline(ss, entry, ' ')) {
+      if (entry.front() == '[')
+        trigger_selected_ = trigger_entries_.size();
+      trigger_entries_.push_back(to_wstring(entry));
+    }
+
     size_t left = trigger.find('[');
     size_t right = trigger.find(']');
     if (left < right && left != std::string::npos && right != std::string::npos)
@@ -61,6 +71,8 @@ class Led : public ComponentBase {
   void Toggle() {
     brightness_ = !brightness_;
     std::ofstream(file_path_ + "/brightness") << brightness_;
+    std::ofstream(file_path_ + "/trigger") << "none";
+    FetchState();
   }
 
   void TriggerTimer() {
@@ -69,14 +81,18 @@ class Led : public ComponentBase {
         << std::to_string(int(ratio_ * period_));
     std::ofstream(file_path_ + "/delay_off")
         << std::to_string(int((1.f - ratio_) * period_));
-    GetTrigger();
+    FetchState();
   }
 
   Element Render() override {
     return vbox({
-        text(L"Name      :" + to_wstring(name_)),
-        text(L"Brightness:" + to_wstring(brightness_)),
-        text(L"Trigger   :" + to_wstring(trigger_)),
+        hbox(text(L"Name      :") | bold, text(to_wstring(name_))),
+        hbox(text(L"Brightness:") | bold, text(to_wstring(brightness_))),
+        hbox(text(L"Trigger   :") | bold, text(to_wstring(trigger_))),
+        separator(),
+        hbox(separator(),
+             trigger_list_->Render() | yframe | size(HEIGHT, EQUAL, 10)),
+        separator(),
         button_toggle_->Render(),
         hbox({
             slider_period_->Render(),
@@ -90,6 +106,17 @@ class Led : public ComponentBase {
     });
   }
 
+  bool OnEvent(Event event) override {
+    int trigger_selected = trigger_selected_;
+    bool ret = ComponentBase::OnEvent(event);
+    if (trigger_selected != trigger_selected_) {
+      std::ofstream(file_path_ + "/trigger")
+          << to_string(trigger_entries_[trigger_selected_]);
+      FetchState();
+    }
+    return ret;
+  }
+
   const std::string name_;
   const std::string file_path_;
   int brightness_ = 0;
@@ -97,6 +124,10 @@ class Led : public ComponentBase {
   float ratio_ = 0.5f;
   std::string trigger_;
 
+  int trigger_selected_ = 0;
+  std::vector<std::wstring> trigger_entries_;
+
+  Component trigger_list_ = Radiobox(&trigger_entries_, &trigger_selected_);
   Component button_toggle_ = Button(L"Toggle", [this] { Toggle(); });
   Component button_trigger_timer_ =
       Button(L"Trigger on timer ", [this] { TriggerTimer(); });

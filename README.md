@@ -7,7 +7,7 @@ make -j8
 ```
 
 ### Current Status
-[[![asciicast](https://asciinema.org/a/424909.svg)](https://asciinema.org/a/424909)
+[![asciicast](https://asciinema.org/a/cNTFvDeg7mr1klUUSeudbGw2x.svg)](https://asciinema.org/a/cNTFvDeg7mr1klUUSeudbGw2x)
 
 ### For Arm
 
