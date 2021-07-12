@@ -5,15 +5,8 @@ mkdir -p build || cd build
 cmake ../board
 make -j8
 ```
-
-## Usage
-
-```
-sudo ./beagle-config --gateway 192.168.6.1 --dns1 8.8.4.4 --dns2 8.8.8.8 -i
-```
-
 ### Current Status
-[![asciicast](https://asciinema.org/a/422619.svg)](https://asciinema.org/a/422619)
+[![asciicast](https://asciinema.org/a/cNTFvDeg7mr1klUUSeudbGw2x.svg)](https://asciinema.org/a/cNTFvDeg7mr1klUUSeudbGw2x)
 
 ### For Arm
 

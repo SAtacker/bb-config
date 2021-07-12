@@ -300,9 +300,9 @@ class ICSImpl : public PanelBase {
     }
   }
 
-  std::string def_gw_str;
-  std::string dns_1_str;
-  std::string dns_2_str;
+  char def_gw_str[MAX_BUFFER];
+  char dns_1_str[MAX_BUFFER];
+  char dns_2_str[MAX_BUFFER];
 };
 
 namespace panel {

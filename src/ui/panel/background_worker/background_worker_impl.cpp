@@ -49,10 +49,12 @@ void WorkerMain1(bool* should_continue,
 class BackgroundWorkerImpl : public PanelBase {
  public:
   BackgroundWorkerImpl(ScreenInteractive* screen) : screen_(screen) {
+    auto button_option = ButtonOption();
+    button_option.border = false;
     button_[0] = Button(
-        &button_label_[0], [this] { ToggleWorker(0); }, false);
+        &button_label_[0], [this] { ToggleWorker(0); }, button_option);
     button_[1] = Button(
-        &button_label_[1], [this] { ToggleWorker(1); }, false);
+        &button_label_[1], [this] { ToggleWorker(1); }, button_option);
     Add(Container::Vertical({
         button_[0],
         button_[1],
