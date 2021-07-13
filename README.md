@@ -6,7 +6,7 @@ cmake ../board
 make -j8
 ```
 ### Current Status
-[![asciicast](https://asciinema.org/a/cNTFvDeg7mr1klUUSeudbGw2x.svg)](https://asciinema.org/a/cNTFvDeg7mr1klUUSeudbGw2x)
+[![asciicast](https://asciinema.org/a/425283.svg)](https://asciinema.org/a/425283)
 
 ### For Arm
 

@@ -31,18 +31,27 @@ class ICSImpl : public PanelBase {
       : route_add(true),
         user_share_path(xdg_utils::data::home()),
         user_share_config_path(user_share_path + BEAGLE_SHARE_DIR) {
-
     /* Load stored config */
     load_config();
     Add(Container::Vertical({
         Container::Horizontal({
-            Button(L"ICS On", [&] { set_route_add_rem(true); }),
-            Button(L"ICS Off", [&] { set_route_add_rem(false); }),
+            Button(L"ICS On",
+                   [&] {
+                     route_add = true;
+                     route_h();
+                     store_config();
+                   }),
+            Button(L"ICS Off",
+                   [&] {
+                     route_add = false;
+                     route_h();
+                     store_config();
+                   }),
         }),
         Container::Horizontal({
-            Input(L" Gateway ", def_gw_str),
-            Input(L" DNS 1 ", dns_1_str),
-            Input(L" DNS 2 ", dns_2_str),
+            Input(&def_gw_str, L" Gateway "),
+            Input(&dns_1_str, L" DNS 1 "),
+            Input(&dns_2_str, L" DNS 2 "),
         }),
     }));
   }
@@ -61,37 +70,19 @@ class ICSImpl : public PanelBase {
   /* Storing User config in the below file */
   std::fstream config_file;
 
-  /* Internet Connection Sharing Main Function */
-  int ics() {
-    // TODO : Verify the strings
-    if (strlen(def_gw_str) < sizeof(RTGATEWAY)) {
-      strcpy(def_gw_str, RTGATEWAY);
-    }
-    if (strlen(dns_1_str) < sizeof(DEFAULT_DNS_1)) {
-      strcpy(dns_1_str, DEFAULT_DNS_1);
-    }
-    if (strlen(dns_2_str) < sizeof(DEFAULT_DNS_2)) {
-      strcpy(dns_2_str, DEFAULT_DNS_2);
-    }
-
-    if (int err = route_h() < 0)
-      return err;
-    return 0;
-  }
-
-  /* Driver Function for Internet Connection Sharing*/
-  void set_route_add_rem(bool state) {
-    route_add = state;
-    ics();
-  }
-
-  /* Routing Helper Function*/
+  /*
+  Internet Connection Sharing Main Function 
+  * Edits resolv.conf
+  * Adds route
+  * Deletes route
+  TODO:Verify the userinput
+  */
   int route_h() {
     int sockfd;
     struct rtentry route;
     struct sockaddr_in *dst, *gw, *mask;
     int err = 0;
-    auto gw_addr = inet_addr(def_gw_str);
+    auto gw_addr = inet_addr(to_string(def_gw_str).c_str());
 
     // create the socket
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
@@ -168,8 +159,9 @@ class ICSImpl : public PanelBase {
 
               /* Stores nameserver strings */
               char tmp[300];
-              sprintf(tmp, "nameserver %s\nnameserver %s\n", dns_1_str,
-                      dns_2_str);
+              sprintf(tmp, "nameserver %s\nnameserver %s\n",
+                      to_string(dns_1_str).c_str(),
+                      to_string(dns_2_str).c_str());
               strcat(str, tmp);
 
               /* Get the state of file operation */
@@ -180,7 +172,8 @@ class ICSImpl : public PanelBase {
               if (state < 0) {
                 printf("fail to write.\n");
               } else {
-                printf("Successful %s %s\n", dns_1_str, dns_2_str);
+                printf("Successful %s %s\n", to_string(dns_1_str).c_str(),
+                       to_string(dns_2_str).c_str());
               }
             } else {
               printf("Permission denied.\n");
@@ -205,7 +198,7 @@ class ICSImpl : public PanelBase {
          * Handle Error gracefully
          * Provide Logs
          */
-        std::cerr << "Error ioctl add GW: " << def_gw_str << "\n"
+        std::cerr << "Error ioctl add GW: " << to_string(def_gw_str) << "\n"
                   << strerror(errno) << std::endl;
       }
     } else {
@@ -214,7 +207,7 @@ class ICSImpl : public PanelBase {
          * Handle Error gracefully
          * Provide Logs
          */
-        std::cerr << "Error ioctl del GW: " << def_gw_str << "\n"
+        std::cerr << "Error ioctl del GW: " << to_string(def_gw_str) << "\n"
                   << strerror(errno) << std::endl;
       }
     }
@@ -267,11 +260,11 @@ class ICSImpl : public PanelBase {
 
         // Custom coding
         if (name == "dns1")
-          strcpy(dns_1_str, value.c_str());
+          dns_1_str = to_wstring(value);
         else if (name == "dns2")
-          strcpy(dns_2_str, value.c_str());
+          dns_2_str = to_wstring(value);
         else if (name == "gateway")
-          strcpy(def_gw_str, value.c_str());
+          def_gw_str = to_wstring(value);
       }
       config_file.close();
     }
@@ -291,18 +284,18 @@ class ICSImpl : public PanelBase {
 
       config_file << "# Last Updated : " << std::ctime(&time_);
       config_file << "gateway"
-                  << "=" << def_gw_str << "\n";
+                  << "=" << to_string(def_gw_str) << "\n";
       config_file << "dns1"
-                  << "=" << dns_1_str << "\n";
+                  << "=" << to_string(dns_1_str) << "\n";
       config_file << "dns2"
-                  << "=" << dns_2_str << "\n";
+                  << "=" << to_string(dns_2_str) << "\n";
       config_file.close();
     }
   }
 
-  char def_gw_str[MAX_BUFFER];
-  char dns_1_str[MAX_BUFFER];
-  char dns_2_str[MAX_BUFFER];
+  std::wstring def_gw_str;
+  std::wstring dns_1_str;
+  std::wstring dns_2_str;
 };
 
 namespace panel {
