@@ -122,7 +122,7 @@ class ICSImpl : public PanelBase {
     }
 
     int nameserver_count = CountNameserver();
-    if (nameserver_count != 0) {
+    if (nameserver_count >= 2) {
       std::cerr << "Servers already exist: nameserver_count = "
                 << nameserver_count << std::endl;
 
