@@ -112,9 +112,10 @@ class ICSImpl : public PanelBase {
     // It is true then it adds resolv.conf and route else it deletes the route
     // stored in beagle.conf
     if (!route_add_) {
-      int error =  ioctl(socket_file_descriptor, SIOCDELRT, &route);
+      int error = ioctl(socket_file_descriptor, SIOCDELRT, &route);
       if (error != 0) {
-        std::cerr << "Error ioctl del rt_gateway: " << to_string(gateway_str) << "\n"
+        std::cerr << "Error ioctl del rt_gateway: " << to_string(gateway_str)
+                  << "\n"
                   << strerror(errno) << std::endl;
       }
       shutdown(socket_file_descriptor, SHUT_RDWR);
@@ -139,7 +140,6 @@ class ICSImpl : public PanelBase {
       return -1;
     }
 
-
     std::time_t time_ =
         std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     auto ti = std::ctime(&time_);
@@ -155,7 +155,8 @@ class ICSImpl : public PanelBase {
     /* Add it */
     int error = ioctl(socket_file_descriptor, SIOCADDRT, &route);
     if (error != 0) {
-      std::cerr << "Error ioctl add rt_gateway: " << to_string(gateway_str) << "\n"
+      std::cerr << "Error ioctl add rt_gateway: " << to_string(gateway_str)
+                << "\n"
                 << strerror(errno) << std::endl;
       shutdown(socket_file_descriptor, SHUT_RDWR);
       return -1;
