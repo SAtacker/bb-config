@@ -28,7 +28,6 @@ add_executable(beagle-config
   src/ui/panel/placeholder/placeholder_impl.cpp
   src/ui/panel/pru/pru_impl.cpp
   src/ui/panel/wifi/wifi_impl.cpp
-  src/connman_handler/connman_handler
   src/ui/ui.cpp
   src/ui/ui.hpp
 )
