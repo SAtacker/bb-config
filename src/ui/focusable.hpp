@@ -1,6 +1,8 @@
 #ifndef BEAGLE_CONFIG_UI_PANEL_FOCUSABLE
 #define BEAGLE_CONFIG_UI_PANEL_FOCUSABLE
 
+#include <ftxui/component/component_base.hpp>
+
 namespace ui {
 
 using namespace ftxui;

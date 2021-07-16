@@ -57,5 +57,3 @@ On the board
 sudo ln -s /lib/ld-linux-armhf.so.3 /lib/ld-linux.so.3
 ./beagle-config
 ```
-
-[![asciicast](https://asciinema.org/a/423963.svg)](https://asciinema.org/a/423963)

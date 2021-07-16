@@ -145,6 +145,7 @@ void Loop() {
            panel::GPIO(),
            panel::ICS(),
            panel::EMMC(),
+           panel::Led(),
            panel::PlaceHolder(L"Freeze Packages"),
            panel::PlaceHolder(L"Wireless Configurations"),
            panel::PlaceHolder(L"Sensor Stats and Configurations "),
