@@ -1,3 +1,6 @@
+#ifndef UTILS_HPP
+#define UTILS_HPP
+
 #include "process.hpp"
 
 void shell_helper(const char* cmd, std::string* result) {
@@ -29,3 +32,5 @@ void shell_helper(const char* cmd) {
   shell.limit(limits);
   shell.exec();
 }
+
+#endif

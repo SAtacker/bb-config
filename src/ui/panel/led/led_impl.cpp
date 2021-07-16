@@ -1,9 +1,9 @@
 #include <fstream>
+#include <sstream>
 #include "ftxui/component/component.hpp"
 #include "ftxui/dom/elements.hpp"
+#include "process.hpp"
 #include "ui/panel/panel.hpp"
-#include <sstream>
-#include "utils.hpp"
 
 #define LEDS_PATH "/sys/class/leds/"
 
@@ -51,7 +51,7 @@ class Led : public ComponentBase {
     std::ifstream file(file_path_ + "/trigger");
     std::string trigger;
     std::getline(file, trigger);
-    
+
     std::string entry;
     std::stringstream ss(trigger);
     while (std::getline(ss, entry, ' ')) {

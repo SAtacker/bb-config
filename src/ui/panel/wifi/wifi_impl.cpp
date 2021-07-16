@@ -1,8 +1,61 @@
-#include "connman_handler/connman_handler.hpp"
+#include <errno.h>
+#include <linux/if.h>
+#include <linux/wireless.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#include <algorithm>
+#include <chrono>
+#include <ctime>
+#include <fstream>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <thread>
+#include <unordered_map>
+#include <vector>
 #include "ftxui/component/component.hpp"
 #include "ftxui/dom/elements.hpp"
 #include "ui/panel/panel.hpp"
 #include "utils.hpp"
+
+#define CONNMAN_SERVICE_F_PATH "/var/lib/connman"
+
+/* Definition of possible strings in the .config files */
+#define CONFIG_KEY_NAME "Name"
+#define CONFIG_KEY_DESC "Description"
+
+#define SERVICE_KEY_TYPE "Type"
+#define SERVICE_KEY_NAME "Name"
+#define SERVICE_KEY_SSID "SSID"
+#define SERVICE_KEY_EAP "EAP"
+#define SERVICE_KEY_CA_CERT "CACertFile"
+#define SERVICE_KEY_CL_CERT "ClientCertFile"
+#define SERVICE_KEY_PRV_KEY "PrivateKeyFile"
+#define SERVICE_KEY_PRV_KEY_PASS "PrivateKeyPassphrase"
+#define SERVICE_KEY_PRV_KEY_PASS_TYPE "PrivateKeyPassphraseType"
+#define SERVICE_KEY_IDENTITY "Identity"
+#define SERVICE_KEY_ANONYMOUS_IDENTITY "AnonymousIdentity"
+#define SERVICE_KEY_SUBJECT_MATCH "SubjectMatch"
+#define SERVICE_KEY_ALT_SUBJECT_MATCH "AltSubjectMatch"
+#define SERVICE_KEY_DOMAIN_SUFF_MATCH "DomainSuffixMatch"
+#define SERVICE_KEY_DOMAIN_MATCH "DomainMatch"
+#define SERVICE_KEY_PHASE2 "Phase2"
+#define SERVICE_KEY_PASSPHRASE "Passphrase"
+#define SERVICE_KEY_SECURITY "Security"
+#define SERVICE_KEY_HIDDEN "Hidden"
+#define SERVICE_KEY_MDNS "mDNS"
+
+#define SERVICE_KEY_IPv4 "IPv4"
+#define SERVICE_KEY_IPv6 "IPv6"
+#define SERVICE_KEY_IPv6_PRIVACY "IPv6.Privacy"
+#define SERVICE_KEY_MAC "MAC"
+#define SERVICE_KEY_DEVICE_NAME "DeviceName"
+#define SERVICE_KEY_NAMESERVERS "Nameservers"
+#define SERVICE_KEY_SEARCH_DOMAINS "SearchDomains"
+#define SERVICE_KEY_TIMESERVERS "Timeservers"
+#define SERVICE_KEY_DOMAIN "Domain"
 
 namespace ui {
 
@@ -256,13 +309,14 @@ class WiFiImpl : public PanelBase {
     shell_helper(
         "cat /sys/class/net/wlan0/address | sed  -r "
         "'s/^([^:]{2}):([^:]{2}):([^:]{2}):([^:]{2}):([^:]{2}):([^:]{2})$/"
-        "\\1\\2\\3\\4\\5\\6/'");
+        "\\1\\2\\3\\4\\5\\6/'",
+        &result);
 
     /* Get macaddress from trailing spaces */
     auto mac_address = result.substr(0, result.length() - 2);
 
     /* Get connman services */
-    shell_helper("connmanctl services | sed -e 's/[ \t]*//'");
+    shell_helper("connmanctl services | sed -e 's/[ \t]*//'", &result);
 
     /* Temporary string to store wifi_macaddress*/
     auto temp_start = "wifi_" + mac_address;
@@ -357,7 +411,8 @@ class WiFiImpl : public PanelBase {
     return 0;
   }
 
-  std::string trim(const std::string& str, const std::string& whitespace = " \t") {
+  std::string trim(const std::string& str,
+                   const std::string& whitespace = " \t") {
     const auto strBegin = str.find_first_not_of(whitespace);
     if (strBegin == std::string::npos)
       return "";  // no content
