@@ -31,6 +31,7 @@ add_executable(beagle-config
   src/ui/panel/wifi/wifi_impl.cpp
   src/ui/ui.cpp
   src/ui/ui.hpp
+  src/utils.hpp
 )
 
 target_link_libraries(beagle-config

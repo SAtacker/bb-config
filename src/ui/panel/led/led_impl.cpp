@@ -4,7 +4,6 @@
 #include "ftxui/dom/elements.hpp"
 #include "process.hpp"
 #include "ui/panel/panel.hpp"
-#include "utils.hpp"
 
 #define LEDS_PATH "/sys/class/leds/"
 
