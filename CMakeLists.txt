@@ -34,6 +34,7 @@ add_executable(beagle-config
 
 target_link_libraries(beagle-config
   PRIVATE ftxui::component
+  PRIVATE stdc++fs
 )
 
 target_include_directories(beagle-config
