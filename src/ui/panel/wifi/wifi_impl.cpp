@@ -20,46 +20,49 @@
 #include "ui/panel/panel.hpp"
 #include "utils.hpp"
 
-#define CONNMAN_SERVICE_F_PATH "/var/lib/connman"
-
-/* Definition of possible strings in the .config files */
-#define CONFIG_KEY_NAME "Name"
-#define CONFIG_KEY_DESC "Description"
-
-#define SERVICE_KEY_TYPE "Type"
-#define SERVICE_KEY_NAME "Name"
-#define SERVICE_KEY_SSID "SSID"
-#define SERVICE_KEY_EAP "EAP"
-#define SERVICE_KEY_CA_CERT "CACertFile"
-#define SERVICE_KEY_CL_CERT "ClientCertFile"
-#define SERVICE_KEY_PRV_KEY "PrivateKeyFile"
-#define SERVICE_KEY_PRV_KEY_PASS "PrivateKeyPassphrase"
-#define SERVICE_KEY_PRV_KEY_PASS_TYPE "PrivateKeyPassphraseType"
-#define SERVICE_KEY_IDENTITY "Identity"
-#define SERVICE_KEY_ANONYMOUS_IDENTITY "AnonymousIdentity"
-#define SERVICE_KEY_SUBJECT_MATCH "SubjectMatch"
-#define SERVICE_KEY_ALT_SUBJECT_MATCH "AltSubjectMatch"
-#define SERVICE_KEY_DOMAIN_SUFF_MATCH "DomainSuffixMatch"
-#define SERVICE_KEY_DOMAIN_MATCH "DomainMatch"
-#define SERVICE_KEY_PHASE2 "Phase2"
-#define SERVICE_KEY_PASSPHRASE "Passphrase"
-#define SERVICE_KEY_SECURITY "Security"
-#define SERVICE_KEY_HIDDEN "Hidden"
-#define SERVICE_KEY_MDNS "mDNS"
-
-#define SERVICE_KEY_IPv4 "IPv4"
-#define SERVICE_KEY_IPv6 "IPv6"
-#define SERVICE_KEY_IPv6_PRIVACY "IPv6.Privacy"
-#define SERVICE_KEY_MAC "MAC"
-#define SERVICE_KEY_DEVICE_NAME "DeviceName"
-#define SERVICE_KEY_NAMESERVERS "Nameservers"
-#define SERVICE_KEY_SEARCH_DOMAINS "SearchDomains"
-#define SERVICE_KEY_TIMESERVERS "Timeservers"
-#define SERVICE_KEY_DOMAIN "Domain"
-
 namespace ui {
 
 namespace {
+
+static constexpr const char CONNMAN_SERVICE_F_PATH[]{"/var/lib/connman/"};
+
+/* Definition of possible strings in the .config files */
+static constexpr const char CONFIG_KEY_NAME[]{"Name"};
+static constexpr const char CONFIG_KEY_DESC[]{"Description"};
+
+static constexpr const char SERVICE_KEY_TYPE[]{"Type"};
+static constexpr const char SERVICE_KEY_NAME[]{"Name"};
+static constexpr const char SERVICE_KEY_SSID[]{"SSID"};
+static constexpr const char SERVICE_KEY_EAP[]{"EAP"};
+static constexpr const char SERVICE_KEY_CA_CERT[]{"CACertFile"};
+static constexpr const char SERVICE_KEY_CL_CERT[]{"ClientCertFile"};
+static constexpr const char SERVICE_KEY_PRV_KEY[]{"PrivateKeyFile"};
+static constexpr const char SERVICE_KEY_PRV_KEY_PASS[]{"PrivateKeyPassphrase"};
+static constexpr const char SERVICE_KEY_PRV_KEY_PASS_TYPE[]{
+    "PrivateKeyPassphraseType"};
+static constexpr const char SERVICE_KEY_IDENTITY[]{"Identity"};
+static constexpr const char SERVICE_KEY_ANONYMOUS_IDENTITY[]{
+    "AnonymousIdentity"};
+static constexpr const char SERVICE_KEY_SUBJECT_MATCH[]{"SubjectMatch"};
+static constexpr const char SERVICE_KEY_ALT_SUBJECT_MATCH[]{"AltSubjectMatch"};
+static constexpr const char SERVICE_KEY_DOMAIN_SUFF_MATCH[]{
+    "DomainSuffixMatch"};
+static constexpr const char SERVICE_KEY_DOMAIN_MATCH[]{"DomainMatch"};
+static constexpr const char SERVICE_KEY_PHASE2[]{"Phase2"};
+static constexpr const char SERVICE_KEY_PASSPHRASE[]{"Passphrase"};
+static constexpr const char SERVICE_KEY_SECURITY[]{"Security"};
+static constexpr const char SERVICE_KEY_HIDDEN[]{"Hidden"};
+static constexpr const char SERVICE_KEY_MDNS[]{"mDNS"};
+
+static constexpr const char SERVICE_KEY_IPv4[]{"IPv4"};
+static constexpr const char SERVICE_KEY_IPv6[]{"IPv6"};
+static constexpr const char SERVICE_KEY_IPv6_PRIVACY[]{"IPv6.Privacy"};
+static constexpr const char SERVICE_KEY_MAC[]{"MAC"};
+static constexpr const char SERVICE_KEY_DEVICE_NAME[]{"DeviceName"};
+static constexpr const char SERVICE_KEY_NAMESERVERS[]{"Nameservers"};
+static constexpr const char SERVICE_KEY_SEARCH_DOMAINS[]{"SearchDomains"};
+static constexpr const char SERVICE_KEY_TIMESERVERS[]{"Timeservers"};
+static constexpr const char SERVICE_KEY_DOMAIN[]{"Domain"};
 
 struct connman_data {
   /* wifi | ethernet */
@@ -81,7 +84,6 @@ class WiFiImpl : public PanelBase {
     disconnect_button = Button(L"Disconnect", [&] { Disconnect(); });
     back_button = Button(L"Back", [&] { activity = ActivityMain; });
     pass_input = Input(&password, L"password");
-    MenuOption option;
     option.on_enter = [&] { activity = ActivityConnect; };
     menu_scan = Menu(&wifi_list_, &selected, &option);
 
@@ -132,7 +134,7 @@ class WiFiImpl : public PanelBase {
     scan_label_ =
         scanning_ ? L"Scan network (Status: scanning...)" : L"Scan network";
     auto wifi_status_ =
-        (wifi_status() ? L"WiFi Status : Enabled" : L"WiFi Status : Disabled");
+        (WifiStatus() ? L"WiFi Status : Enabled" : L"WiFi Status : Disabled");
     auto current_network = L"Current Network: " + to_wstring(ActiveWifiName());
 
     return vbox({
@@ -168,8 +170,8 @@ class WiFiImpl : public PanelBase {
       wifi_scan_.join();
 
     scanning_ = true;
-    wifi_scan_ = std::thread([&] {
-      ListWifiNames(wifi_list_receiver_->MakeSender(), [&] {
+    wifi_scan_ = std::thread([=] {
+      ListWifiNames(wifi_list_receiver_->MakeSender(), [=] {
         scanning_ = false;
         screen_->PostEvent(Event::Custom);
       });
@@ -184,7 +186,7 @@ class WiFiImpl : public PanelBase {
     RefreshNetworkList();
     for (auto n : service_names) {
       if (n.first == data.name) {
-        file_path = CONNMAN_SERVICE_F_PATH "/" + n.second + ".config";
+        file_path = CONNMAN_SERVICE_F_PATH + n.second + ".config";
         lookup_table[n.second][SERVICE_KEY_TYPE] = data.type;
         lookup_table[n.second][SERVICE_KEY_NAME] = data.name;
         lookup_table[n.second][SERVICE_KEY_PASSPHRASE] = data.pass;
@@ -208,7 +210,7 @@ class WiFiImpl : public PanelBase {
     RefreshNetworkList();
     for (auto n : service_names) {
       if (n.first == data.name) {
-        file_path = CONNMAN_SERVICE_F_PATH "/" + n.second + ".config";
+        file_path = CONNMAN_SERVICE_F_PATH + n.second + ".config";
         lookup_table[n.second][SERVICE_KEY_TYPE] = data.type;
         lookup_table[n.second][SERVICE_KEY_NAME] = data.name;
         lookup_table[n.second][SERVICE_KEY_PASSPHRASE] = data.pass;
@@ -221,7 +223,7 @@ class WiFiImpl : public PanelBase {
   }
 
   void ToggleWifi() {
-    if (!wifi_status())
+    if (!WifiStatus())
       shell_helper("connmanctl enable wifi");
     else
       shell_helper("connmanctl disable wifi");
@@ -297,7 +299,7 @@ class WiFiImpl : public PanelBase {
     3. Parses the output
   */
   void RefreshNetworkList() {
-    if (!wifi_status()) {
+    if (!WifiStatus()) {
       /* Enable wifi */
       shell_helper("connmanctl enable wifi");
     }
@@ -387,7 +389,7 @@ class WiFiImpl : public PanelBase {
     return active_name = "None";
   }
 
-  bool wifi_status() {
+  bool WifiStatus() {
     int skfd = socket(AF_INET, SOCK_DGRAM, 0);
 
     if (skfd < 0) {
@@ -458,6 +460,7 @@ class WiFiImpl : public PanelBase {
   connman_data data;
   Component scan_button;
   Component menu_scan;
+  MenuOption option;
   Component pass_input;
   Component connect_button;
   Component disconnect_button;
