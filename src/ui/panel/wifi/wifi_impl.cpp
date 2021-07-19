@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <chrono>
 #include <ctime>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -78,56 +79,67 @@ struct connman_data {
 class WiFiImpl : public PanelBase {
  public:
   WiFiImpl(ScreenInteractive* screen) : screen_(screen) {
-    wifi_toggle_ = Button(L"Toggle WiFi", [&] { ToggleWifi(); });
-    scan_button = Button(&scan_label_, [&] { Scan(); });
-    connect_button = Button(L"Connect", [&] { Connect(); });
-    disconnect_button = Button(L"Disconnect", [&] { Disconnect(); });
-    back_button = Button(L"Back", [&] { activity = ActivityMain; });
-    pass_input = Input(&password, L"password");
-    option.on_enter = [&] { activity = ActivityConnect; };
-    menu_scan = Menu(&wifi_list_, &selected, &option);
+    // TODO:Is there a better method than this?
+    if (!std::filesystem::exists("/sys/class/net/wlan0")) {
+      wifiCompatiblity = false;
+    }
+    if (wifiCompatiblity) {
+      wifi_toggle_ = Button(L"Toggle WiFi", [&] { ToggleWifi(); });
+      scan_button = Button(&scan_label_, [&] { Scan(); });
+      connect_button = Button(L"Connect", [&] { Connect(); });
+      disconnect_button = Button(L"Disconnect", [&] { Disconnect(); });
+      back_button = Button(L"Back", [&] { activity = ActivityMain; });
+      pass_input = Input(&password, L"password");
+      option.on_enter = [&] { activity = ActivityConnect; };
+      menu_scan = Menu(&wifi_list_, &selected, &option);
 
-    Add(Container::Tab(
-        {
-            Container::Vertical({
-                Container::Horizontal({
-                    wifi_toggle_,
-                    scan_button,
-                }),
-                menu_scan,
-            }),
-            Container::Vertical({
-                pass_input,
-                Container::Horizontal({
-                    connect_button,
-                    disconnect_button,
-                    back_button,
-                }),
-            }),
-        },
-        &activity));
+      Add(Container::Tab(
+          {
+              Container::Vertical({
+                  Container::Horizontal({
+                      wifi_toggle_,
+                      scan_button,
+                  }),
+                  menu_scan,
+              }),
+              Container::Vertical({
+                  pass_input,
+                  Container::Horizontal({
+                      connect_button,
+                      disconnect_button,
+                      back_button,
+                  }),
+              }),
+          },
+          &activity));
 
-    // Populate the wifi network in the background.
-    Scan();
+      // Populate the wifi network in the background.
+      Scan();
+    }
   };
   ~WiFiImpl() {
-    if (wifi_scan_.joinable()) {
-      wifi_scan_.join();
-    }
+    if (wifiCompatiblity)
+      if (wifi_scan_.joinable()) {
+        wifi_scan_.join();
+      }
   }
   std::wstring Title() override { return L"WiFi"; }
 
   Element Render() override {
-    while (wifi_list_receiver_->HasPending())
-      wifi_list_receiver_->Receive(&wifi_list_);
+    if (wifiCompatiblity) {
+      while (wifi_list_receiver_->HasPending())
+        wifi_list_receiver_->Receive(&wifi_list_);
 
-    if (activity == ActivityMain)
-      return RenderMain();
+      if (activity == ActivityMain)
+        return RenderMain();
 
-    if (activity == ActivityConnect)
-      return RenderConnect();
+      if (activity == ActivityConnect)
+        return RenderConnect();
 
-    return text(L"Not implemented");
+      return text(L"Not implemented");
+    } else {
+      return text(L"Feature not supported");
+    }
   }
 
   Element RenderMain() {
@@ -468,6 +480,7 @@ class WiFiImpl : public PanelBase {
   Component wifi_toggle_;
   std::vector<std::wstring> wifi_list_;
   bool scanning_ = false;
+  bool wifiCompatiblity = true;
   std::wstring scan_label_;
   Receiver<decltype(wifi_list_)> wifi_list_receiver_ =
       MakeReceiver<decltype(wifi_list_)>();
