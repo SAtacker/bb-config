@@ -28,42 +28,9 @@ namespace {
 static constexpr const char CONNMAN_SERVICE_F_PATH[]{"/var/lib/connman/"};
 
 /* Definition of possible strings in the .config files */
-static constexpr const char CONFIG_KEY_NAME[]{"Name"};
-static constexpr const char CONFIG_KEY_DESC[]{"Description"};
-
 static constexpr const char SERVICE_KEY_TYPE[]{"Type"};
 static constexpr const char SERVICE_KEY_NAME[]{"Name"};
-static constexpr const char SERVICE_KEY_SSID[]{"SSID"};
-static constexpr const char SERVICE_KEY_EAP[]{"EAP"};
-static constexpr const char SERVICE_KEY_CA_CERT[]{"CACertFile"};
-static constexpr const char SERVICE_KEY_CL_CERT[]{"ClientCertFile"};
-static constexpr const char SERVICE_KEY_PRV_KEY[]{"PrivateKeyFile"};
-static constexpr const char SERVICE_KEY_PRV_KEY_PASS[]{"PrivateKeyPassphrase"};
-static constexpr const char SERVICE_KEY_PRV_KEY_PASS_TYPE[]{
-    "PrivateKeyPassphraseType"};
-static constexpr const char SERVICE_KEY_IDENTITY[]{"Identity"};
-static constexpr const char SERVICE_KEY_ANONYMOUS_IDENTITY[]{
-    "AnonymousIdentity"};
-static constexpr const char SERVICE_KEY_SUBJECT_MATCH[]{"SubjectMatch"};
-static constexpr const char SERVICE_KEY_ALT_SUBJECT_MATCH[]{"AltSubjectMatch"};
-static constexpr const char SERVICE_KEY_DOMAIN_SUFF_MATCH[]{
-    "DomainSuffixMatch"};
-static constexpr const char SERVICE_KEY_DOMAIN_MATCH[]{"DomainMatch"};
-static constexpr const char SERVICE_KEY_PHASE2[]{"Phase2"};
 static constexpr const char SERVICE_KEY_PASSPHRASE[]{"Passphrase"};
-static constexpr const char SERVICE_KEY_SECURITY[]{"Security"};
-static constexpr const char SERVICE_KEY_HIDDEN[]{"Hidden"};
-static constexpr const char SERVICE_KEY_MDNS[]{"mDNS"};
-
-static constexpr const char SERVICE_KEY_IPv4[]{"IPv4"};
-static constexpr const char SERVICE_KEY_IPv6[]{"IPv6"};
-static constexpr const char SERVICE_KEY_IPv6_PRIVACY[]{"IPv6.Privacy"};
-static constexpr const char SERVICE_KEY_MAC[]{"MAC"};
-static constexpr const char SERVICE_KEY_DEVICE_NAME[]{"DeviceName"};
-static constexpr const char SERVICE_KEY_NAMESERVERS[]{"Nameservers"};
-static constexpr const char SERVICE_KEY_SEARCH_DOMAINS[]{"SearchDomains"};
-static constexpr const char SERVICE_KEY_TIMESERVERS[]{"Timeservers"};
-static constexpr const char SERVICE_KEY_DOMAIN[]{"Domain"};
 
 struct connman_data {
   /* wifi | ethernet */
@@ -336,7 +303,6 @@ class WiFiImpl : public PanelBase {
     auto temp_start = "wifi_" + mac_address;
 
     while (true) {
-      /* If length is 0 break */
       if (result.length() == 0) {
         break;
       }
@@ -378,24 +344,24 @@ class WiFiImpl : public PanelBase {
 
   std::string ActiveWifiName() {
     int sockfd;
-    char id[IW_ESSID_MAX_SIZE + 1];
+    char active_wlan_id[IW_ESSID_MAX_SIZE + 1];
 
-    struct iwreq wreq;
-    memset(&wreq, 0, sizeof(struct iwreq));
-    wreq.u.essid.length = IW_ESSID_MAX_SIZE + 1;
+    struct iwreq wlan_ioctl_req;
+    memset(&wlan_ioctl_req, 0, sizeof(struct iwreq));
+    wlan_ioctl_req.u.essid.length = IW_ESSID_MAX_SIZE + 1;
 
-    sprintf(wreq.ifr_name, "wlan0");
+    sprintf(wlan_ioctl_req.ifr_name, "wlan0");
 
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
       return active_name = std::string("Error: ") + *strerror(errno);
     }
 
-    wreq.u.essid.pointer = id;
-    if (ioctl(sockfd, SIOCGIWESSID, &wreq) == -1) {
+    wlan_ioctl_req.u.essid.pointer = active_wlan_id;
+    if (ioctl(sockfd, SIOCGIWESSID, &wlan_ioctl_req) == -1) {
       return active_name = std::string("Error: ") + *strerror(errno);
     }
     close(sockfd);
-    active_name = (char*)wreq.u.essid.pointer;
+    active_name = (char*)wlan_ioctl_req.u.essid.pointer;
     if (active_name.length())
       return active_name;
     return active_name = "None";
@@ -423,40 +389,6 @@ class WiFiImpl : public PanelBase {
       return (flags & IFF_UP) ? true : false;
     }
     return 0;
-  }
-
-  std::string trim(const std::string& str,
-                   const std::string& whitespace = " \t") {
-    const auto strBegin = str.find_first_not_of(whitespace);
-    if (strBegin == std::string::npos)
-      return "";  // no content
-
-    const auto strEnd = str.find_last_not_of(whitespace);
-    const auto strRange = strEnd - strBegin + 1;
-
-    return str.substr(strBegin, strRange);
-  }
-
-  std::string reduce(const std::string& str,
-                     const std::string& fill = " ",
-                     const std::string& whitespace = " \t") {
-    // trim first
-    auto result_local = trim(str, whitespace);
-
-    // replace sub ranges
-    auto beginSpace = result_local.find_first_of(whitespace);
-    while (beginSpace != std::string::npos) {
-      const auto endSpace =
-          result_local.find_first_not_of(whitespace, beginSpace);
-      const auto range = endSpace - beginSpace;
-
-      result_local.replace(beginSpace, range, fill);
-
-      const auto newStart = beginSpace + fill.length();
-      beginSpace = result_local.find_first_of(whitespace, newStart);
-    }
-
-    return result_local;
   }
 
   int selected = 0;
