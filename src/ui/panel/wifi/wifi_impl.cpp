@@ -25,12 +25,12 @@ namespace ui {
 
 namespace {
 
-static constexpr const char CONNMAN_SERVICE_F_PATH[]{"/var/lib/connman/"};
+constexpr const char CONNMAN_SERVICE_F_PATH[]{"/var/lib/connman/"};
 
 /* Definition of possible strings in the .config files */
-static constexpr const char SERVICE_KEY_TYPE[]{"Type"};
-static constexpr const char SERVICE_KEY_NAME[]{"Name"};
-static constexpr const char SERVICE_KEY_PASSPHRASE[]{"Passphrase"};
+constexpr const char SERVICE_KEY_TYPE[]{"Type"};
+constexpr const char SERVICE_KEY_NAME[]{"Name"};
+constexpr const char SERVICE_KEY_PASSPHRASE[]{"Passphrase"};
 
 struct connman_data {
   /* wifi | ethernet */
