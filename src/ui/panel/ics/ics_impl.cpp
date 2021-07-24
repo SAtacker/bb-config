@@ -122,6 +122,14 @@ class ICSImpl : public PanelBase {
       return -1;
     }
 
+    /* Add it */
+    int error = ioctl(socket_file_descriptor, SIOCADDRT, &route);
+    if (error != 0) {
+      std::cerr << "Error ioctl add rt_gateway: " << to_string(gateway_str)
+                << "\n"
+                << strerror(errno) << std::endl;
+    }
+
     int nameserver_count = CountNameserver();
     if (nameserver_count >= 2) {
       std::cerr << "Servers already exist: nameserver_count = "
@@ -151,16 +159,6 @@ class ICSImpl : public PanelBase {
 
     std::cerr << "Successful " << to_string(dns_1_str) << " "
               << to_string(dns_2_str) << std::endl;
-
-    /* Add it */
-    int error = ioctl(socket_file_descriptor, SIOCADDRT, &route);
-    if (error != 0) {
-      std::cerr << "Error ioctl add rt_gateway: " << to_string(gateway_str)
-                << "\n"
-                << strerror(errno) << std::endl;
-      shutdown(socket_file_descriptor, SHUT_RDWR);
-      return -1;
-    }
 
     /* Close the socket */
     shutdown(socket_file_descriptor, SHUT_RDWR);

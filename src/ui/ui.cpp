@@ -143,7 +143,6 @@ void Loop() {
        {
            panel::PRU(),
            panel::GPIO(),
-           panel::ICS(),
            panel::EMMC(),
            panel::Led(),
            panel::PlaceHolder(L"Freeze Packages"),
@@ -152,6 +151,11 @@ void Loop() {
            panel::PlaceHolder(L"Password"),
            panel::PlaceHolder(L"Boot / Auto login "),
            panel::PlaceHolder(L"Firmware Update"),
+       }},
+      {L"Network",
+       {
+           panel::WiFi(&screen),
+           panel::ICS(),
        }},
       {L"Display",
        {
