@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <filesystem>
 #include <fstream>
+#include "ftxui/component/component.hpp"
 #include "ftxui/dom/elements.hpp"
 #include "ui/panel/panel.hpp"
 
@@ -9,46 +10,92 @@ using namespace ftxui;
 
 namespace ui {
 
+enum sizeApprox {
+  MB = 1024 * 1024,
+  GB = 1024 * 1024 * 1024,
+  KB = 1024,
+};
+
 class EMMCImpl : public PanelBase {
  public:
   EMMCImpl() {
-    Add(Renderer([&] {
-      Elements sizeList;
-      updateBlocks();
-
-      for (size_t i = 0; i < blocks.size(); i++) {
-        auto free_space = std::to_wstring(
-            std::filesystem::space("/dev/" + to_string(blocks[i])).free);
-        auto cap = std::to_wstring(
-            std::filesystem::space("/dev/" + to_string(blocks[i])).capacity);
-        auto avail = std::to_wstring(
-            std::filesystem::space("/dev/" + to_string(blocks[i])).available);
-        sizeList.push_back(hbox({
-                               text(L" Free: " + free_space) | flex,
-                               text(L" Cap: " + cap) | flex,
-                               text(L" Avail:" + avail) | flex,
-                           }) |
-                           border);
-      }
-      auto currentUserPath = std::string(getpwuid(geteuid())->pw_dir);
-      auto free_space =
-          std::to_wstring(std::filesystem::space(currentUserPath).free);
-      auto cap =
-          std::to_wstring(std::filesystem::space(currentUserPath).capacity);
-      auto avail =
-          std::to_wstring(std::filesystem::space(currentUserPath).available);
-      sizeList.push_back(hbox({
-                             text(to_wstring(currentUserPath)) | flex,
-                             text(L" Free: " + free_space) | flex,
-                             text(L" Cap: " + cap) | flex,
-                             text(L" Avail:" + avail) | flex,
-                         }) |
-                         border);
-      return vbox(sizeList);
+    Add(Container::Horizontal({
+        kBButton,
+        mBButton,
+        gBButton,
     }));
   }
   ~EMMCImpl() = default;
   std::wstring Title() override { return L"EMMC and MicroSD stats"; }
+  Element Render() override {
+    Elements elemets;
+    updateBlocks();
+    std::wstring sizeString;
+    switch (converter) {
+      case KB:
+        sizeString = L" KB";
+        break;
+      case MB:
+        sizeString = L" MB";
+        break;
+      case GB:
+        sizeString = L" GB";
+        break;
+      default:
+        sizeString = L" Unknown";
+        break;
+    }
+
+    elemets.push_back(hbox({
+                          text(L"*********") | flex,
+                          text(L"Free") | flex,
+                          text(L"Capacity") | flex,
+                          text(L"Available") | flex,
+                      }) |
+                      border);
+
+    for (size_t i = 0; i < blocks.size(); i++) {
+      auto free_space = std::to_wstring(
+          std::filesystem::space("/dev/" + to_string(blocks[i])).free /
+          (float(converter)));
+      auto cap = std::to_wstring(
+          std::filesystem::space("/dev/" + to_string(blocks[i])).capacity /
+          (float(converter)));
+      auto avail = std::to_wstring(
+          std::filesystem::space("/dev/" + to_string(blocks[i])).available /
+          (float(converter)));
+      elemets.push_back(hbox({
+                            text(blocks[i]) | flex,
+                            text(free_space + sizeString) | flex,
+                            text(cap + sizeString) | flex,
+                            text(avail + sizeString) | flex,
+                        }) |
+                        border);
+    }
+    auto currentUserPath = std::string(getpwuid(geteuid())->pw_dir);
+    auto free_space = std::to_wstring(
+        std::filesystem::space(currentUserPath).free / (float(converter)));
+    auto cap = std::to_wstring(
+        std::filesystem::space(currentUserPath).capacity / (float(converter)));
+    auto avail = std::to_wstring(
+        std::filesystem::space(currentUserPath).available / (float(converter)));
+    elemets.push_back(hbox({
+                          text(to_wstring(currentUserPath)) | flex,
+                          text(free_space + sizeString) | flex,
+                          text(cap + sizeString) | flex,
+                          text(avail + sizeString) | flex,
+                      }) |
+                      border);
+
+    elemets.push_back(hbox({
+                          text(L"Show (approx) size in: ") | center,
+                          kBButton->Render() | center,
+                          mBButton->Render() | center,
+                          gBButton->Render() | center,
+                      }) |
+                      align_right);
+    return vbox(elemets);
+  }
 
  private:
   void updateBlocks() {
@@ -62,6 +109,10 @@ class EMMCImpl : public PanelBase {
   }
 
   std::vector<std::wstring> blocks;
+  sizeApprox converter = MB;
+  Component kBButton = Button(L"KB", [&] { converter = KB; });
+  Component mBButton = Button(L"MB", [&] { converter = MB; });
+  Component gBButton = Button(L"GB", [&] { converter = GB; });
 };
 
 namespace panel {
