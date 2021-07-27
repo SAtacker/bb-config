@@ -5,6 +5,7 @@
 #include "ftxui/component/component.hpp"
 #include "ftxui/dom/elements.hpp"
 #include "ui/panel/panel.hpp"
+#include "utils.hpp"
 
 using namespace ftxui;
 
@@ -20,15 +21,18 @@ class EMMCImpl : public PanelBase {
  public:
   EMMCImpl() {
     Add(Container::Horizontal({
+        resizeButton,
         kBButton,
         mBButton,
         gBButton,
-    }));
+    })
+
+    );
   }
   ~EMMCImpl() = default;
   std::wstring Title() override { return L"EMMC and MicroSD stats"; }
   Element Render() override {
-    Elements elemets;
+    Elements elements;
     updateBlocks();
     std::wstring sizeString;
     switch (converter) {
@@ -46,13 +50,13 @@ class EMMCImpl : public PanelBase {
         break;
     }
 
-    elemets.push_back(hbox({
-                          text(L"*********") | flex,
-                          text(L"Free") | flex,
-                          text(L"Capacity") | flex,
-                          text(L"Available") | flex,
-                      }) |
-                      border);
+    elements.push_back(hbox({
+                           text(L"*********") | flex,
+                           text(L"Free") | flex,
+                           text(L"Capacity") | flex,
+                           text(L"Available") | flex,
+                       }) |
+                       border);
 
     for (size_t i = 0; i < blocks.size(); i++) {
       auto free_space = std::to_wstring(
@@ -64,13 +68,13 @@ class EMMCImpl : public PanelBase {
       auto avail = std::to_wstring(
           std::filesystem::space("/dev/" + to_string(blocks[i])).available /
           (float(converter)));
-      elemets.push_back(hbox({
-                            text(blocks[i]) | flex,
-                            text(free_space + sizeString) | flex,
-                            text(cap + sizeString) | flex,
-                            text(avail + sizeString) | flex,
-                        }) |
-                        border);
+      elements.push_back(hbox({
+                             text(blocks[i]) | flex,
+                             text(free_space + sizeString) | flex,
+                             text(cap + sizeString) | flex,
+                             text(avail + sizeString) | flex,
+                         }) |
+                         border);
     }
     auto currentUserPath = std::string(getpwuid(geteuid())->pw_dir);
     auto free_space = std::to_wstring(
@@ -79,22 +83,28 @@ class EMMCImpl : public PanelBase {
         std::filesystem::space(currentUserPath).capacity / (float(converter)));
     auto avail = std::to_wstring(
         std::filesystem::space(currentUserPath).available / (float(converter)));
-    elemets.push_back(hbox({
-                          text(to_wstring(currentUserPath)) | flex,
-                          text(free_space + sizeString) | flex,
-                          text(cap + sizeString) | flex,
-                          text(avail + sizeString) | flex,
-                      }) |
-                      border);
+    elements.push_back(hbox({
+                           text(to_wstring(currentUserPath)) | flex,
+                           text(free_space + sizeString) | flex,
+                           text(cap + sizeString) | flex,
+                           text(avail + sizeString) | flex,
+                       }) |
+                       border);
 
-    elemets.push_back(hbox({
-                          text(L"Show (approx) size in: ") | center,
-                          kBButton->Render() | center,
-                          mBButton->Render() | center,
-                          gBButton->Render() | center,
-                      }) |
-                      align_right);
-    return vbox(elemets);
+    elements.push_back(hbox({
+        resizeButton->Render() | flex,
+        hbox({text(L"Show (approx) size in: ") | center,
+              kBButton->Render() | center, mBButton->Render() | center,
+              gBButton->Render() | center}) |
+            align_right,
+    }));
+
+    if (reboot) {
+      elements.push_back(text(L"Reboot to reflect changes"));
+      reboot = false;
+    }
+
+    return vbox(elements);
   }
 
  private:
@@ -113,6 +123,11 @@ class EMMCImpl : public PanelBase {
   Component kBButton = Button(L"KB", [&] { converter = KB; });
   Component mBButton = Button(L"MB", [&] { converter = MB; });
   Component gBButton = Button(L"GB", [&] { converter = GB; });
+  Component resizeButton = Button(L"Grow Partition", [&] {
+    shell_helper_no_limit("/opt/scripts/tools/grow_partition.sh");
+    reboot = true;
+  });
+  bool reboot = false;
 };
 
 namespace panel {
