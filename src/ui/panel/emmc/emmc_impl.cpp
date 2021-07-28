@@ -32,7 +32,6 @@ class EMMCImpl : public PanelBase {
   ~EMMCImpl() = default;
   std::wstring Title() override { return L"EMMC and MicroSD stats"; }
   Element Render() override {
-    Elements elements;
     updateBlocks();
     std::wstring sizeString;
     switch (converter) {
@@ -50,15 +49,14 @@ class EMMCImpl : public PanelBase {
         break;
     }
 
-    elements.push_back(hbox({
-                           text(L"*********") | flex,
-                           text(L"Free") | flex,
-                           text(L"Capacity") | flex,
-                           text(L"Available") | flex,
-                       }) |
-                       border);
+    Elements name_list = {text(L"Name"), separator()};
+    Elements free_list = {text(L"Free"), separator()};
+    Elements capacity_list = {text(L"Capacity"), separator()};
+    Elements available_list = {text(L"Start"), separator()};
 
     for (size_t i = 0; i < blocks.size(); i++) {
+      if (i > 10)
+        break;
       auto free_space = std::to_wstring(
           std::filesystem::space("/dev/" + to_string(blocks[i])).free /
           (float(converter)));
@@ -68,43 +66,61 @@ class EMMCImpl : public PanelBase {
       auto avail = std::to_wstring(
           std::filesystem::space("/dev/" + to_string(blocks[i])).available /
           (float(converter)));
-      elements.push_back(hbox({
-                             text(blocks[i]) | flex,
-                             text(free_space + sizeString) | flex,
-                             text(cap + sizeString) | flex,
-                             text(avail + sizeString) | flex,
-                         }) |
-                         border);
-    }
-    auto currentUserPath = std::string(getpwuid(geteuid())->pw_dir);
-    auto free_space = std::to_wstring(
-        std::filesystem::space(currentUserPath).free / (float(converter)));
-    auto cap = std::to_wstring(
-        std::filesystem::space(currentUserPath).capacity / (float(converter)));
-    auto avail = std::to_wstring(
-        std::filesystem::space(currentUserPath).available / (float(converter)));
-    elements.push_back(hbox({
-                           text(to_wstring(currentUserPath)) | flex,
-                           text(free_space + sizeString) | flex,
-                           text(cap + sizeString) | flex,
-                           text(avail + sizeString) | flex,
-                       }) |
-                       border);
 
-    elements.push_back(hbox({
-        resizeButton->Render() | flex,
-        hbox({text(L"Show (approx) size in: ") | center,
-              kBButton->Render() | center, mBButton->Render() | center,
-              gBButton->Render() | center}) |
-            align_right,
-    }));
+      name_list.push_back(text(blocks[i]));
+      free_list.push_back(text(free_space + sizeString));
+      capacity_list.push_back(text(cap + sizeString));
+      available_list.push_back(text(avail + sizeString));
+    }
+
+    {
+      auto currentUserPath = std::string(getpwuid(geteuid())->pw_dir);
+      auto free_space = std::to_wstring(
+          std::filesystem::space(currentUserPath).free / (float(converter)));
+      auto cap =
+          std::to_wstring(std::filesystem::space(currentUserPath).capacity /
+                          (float(converter)));
+      auto avail =
+          std::to_wstring(std::filesystem::space(currentUserPath).available /
+                          (float(converter)));
+      name_list.push_back(text(to_wstring(currentUserPath)));
+      free_list.push_back(text(free_space + sizeString));
+      capacity_list.push_back(text(cap + sizeString));
+      available_list.push_back(text(avail + sizeString));
+    }
+
+    Elements bottom;
+
+    bottom.push_back(
+        hbox({
+            resizeButton->Render() | flex,
+            hbox({text(L"Show (approx) size in: ") | center,
+                  kBButton->Render() | center, mBButton->Render() | center,
+                  gBButton->Render() | center}) |
+                align_right,
+        }) |
+        frame);
 
     if (reboot) {
-      elements.push_back(text(L"Reboot to reflect changes"));
+      bottom.push_back(text(L"Reboot to reflect changes"));
       reboot = false;
     }
 
-    return vbox(elements);
+    auto table = hbox({
+                     vbox(std::move(name_list)),
+                     separator(),
+                     vbox(std::move(free_list)),
+                     separator(),
+                     vbox(std::move(capacity_list)),
+                     separator(),
+                     vbox(std::move(available_list)),
+                 }) |
+                 yframe | border;
+
+    return vbox({
+        table | hcenter,
+        vbox(std::move(bottom)),
+    });
   }
 
  private:
