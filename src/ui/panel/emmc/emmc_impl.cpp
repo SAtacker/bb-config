@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
 #include <sstream>
 #include "ftxui/component/component.hpp"
 #include "ftxui/dom/elements.hpp"
@@ -31,6 +32,8 @@ std::wstring Format(float value, sizeApprox unit) {
       return ss.str() + L" MB";
     case GB:
       return ss.str() + L" GB";
+    default:
+      return L"";
   }
 }
 
@@ -55,43 +58,39 @@ class EMMCImpl : public PanelBase {
     Elements free_list = {text(L"Free"), separator()};
     Elements capacity_list = {text(L"Capacity"), separator()};
     Elements available_list = {text(L"Start"), separator()};
+    Elements gauge_list = {text(L"Filled"), separator()};
+
+    auto add = [&](std::string path) {
+      auto space = std::filesystem::space(path);
+      name_list.push_back(text(to_wstring(path)));
+      free_list.push_back(text(Format(space.free, unit)));
+      capacity_list.push_back(text(Format(space.capacity, unit)));
+      available_list.push_back(text(Format(space.available, unit)));
+      gauge_list.push_back(
+          gauge(float(space.capacity - space.free) / float(space.capacity)));
+    };
 
     for (size_t i = 0; i < blocks.size(); i++) {
-      if (i > 10)
-        break;
-      std::string block_path = "/dev/" + to_string(blocks[i]);
-      auto free_space = std::filesystem::space(block_path).free;
-      auto cap = std::filesystem::space(block_path).capacity;
-      auto avail = std::filesystem::space(block_path).available;
+      if (blocks[i].find(L"loop") != std::string::npos)  // Ignore loop devices.
+        continue;
 
-      name_list.push_back(text(blocks[i]));
-      free_list.push_back(text(Format(free_space, unit)));
-      capacity_list.push_back(text(Format(cap, unit)));
-      available_list.push_back(text(Format(avail, unit)));
+      add("/dev/" + to_string(blocks[i]));
     }
 
-    {
-      auto currentUserPath = std::string(getpwuid(geteuid())->pw_dir);
-      auto free_space = std::filesystem::space(currentUserPath).free;
-      auto cap = std::filesystem::space(currentUserPath).capacity;
-      auto avail = std::filesystem::space(currentUserPath).available;
-      name_list.push_back(text(to_wstring(currentUserPath)));
-      free_list.push_back(text(Format(free_space, unit)));
-      capacity_list.push_back(text(Format(cap, unit)));
-      available_list.push_back(text(Format(avail, unit)));
-    }
+    auto currentUserPath = std::string(getpwuid(geteuid())->pw_dir);
+    add(currentUserPath);
 
     Elements bottom;
 
-    bottom.push_back(
+    bottom.push_back(hbox({
+        resizeButton->Render() | xflex,
         hbox({
-            resizeButton->Render() | flex,
-            hbox({text(L"Show (approx) size in: ") | center,
-                  kBButton->Render() | center, mBButton->Render() | center,
-                  gBButton->Render() | center}) |
-                align_right,
-        }) |
-        frame);
+            text(L"Show (approx) size in: ") | center,
+            kBButton->Render(),
+            mBButton->Render(),
+            gBButton->Render(),
+        }),
+    }));
 
     if (reboot) {
       bottom.push_back(text(L"Reboot to reflect changes"));
@@ -106,13 +105,15 @@ class EMMCImpl : public PanelBase {
                      vbox(std::move(capacity_list)),
                      separator(),
                      vbox(std::move(available_list)),
+                     separator(),
+                     vbox(std::move(gauge_list)) | xflex,
                  }) |
                  yframe | border;
 
     return vbox({
-        table | hcenter,
+        table,
         vbox(std::move(bottom)),
-    });
+    }) | yflex;
   }
 
  private:
