@@ -20,7 +20,6 @@ endif()
 add_executable(beagle-config 
   src/main.cpp 
   src/ui/focusable.hpp
-  src/ui/panel/background_worker/background_worker_impl.cpp
   src/ui/panel/emmc/emmc_impl.cpp
   src/ui/panel/gpio/gpio_impl.cpp
   src/ui/panel/ics/ics_impl.cpp
