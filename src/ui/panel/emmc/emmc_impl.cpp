@@ -111,9 +111,10 @@ class EMMCImpl : public PanelBase {
                  yframe | border;
 
     return vbox({
-        table,
-        vbox(std::move(bottom)),
-    }) | yflex;
+               table,
+               vbox(std::move(bottom)),
+           }) |
+           yflex;
   }
 
  private:

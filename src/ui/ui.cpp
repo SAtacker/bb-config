@@ -146,11 +146,13 @@ void Loop() {
            panel::EMMC(),
            panel::Led(),
            panel::PlaceHolder(L"Freeze Packages"),
-           panel::PlaceHolder(L"Wireless Configurations"),
            panel::PlaceHolder(L"Sensor Stats and Configurations "),
            panel::PlaceHolder(L"Password"),
            panel::PlaceHolder(L"Boot / Auto login "),
            panel::PlaceHolder(L"Firmware Update"),
+           panel::PlaceHolder(L"Uboot Overlays"),
+           panel::PlaceHolder(L"Overlay FS"),
+           panel::PlaceHolder(L"SSH"),
        }},
       {L"Network",
        {
@@ -159,19 +161,12 @@ void Loop() {
        }},
       {L"Display",
        {
-           panel::PlaceHolder(L"Resolution"),
+           panel::PlaceHolder(L"Display Resolution"),
        }},
-      {L"Interfacing",
+      {L"Info",
        {
-           panel::PlaceHolder(L"SSH"),
-           panel::PlaceHolder(L"Uboot Overlays"),
-           panel::PlaceHolder(L"Overlay FS"),
            panel::PlaceHolder(L"Update"),
            panel::PlaceHolder(L"About"),
-       }},
-      {L"Demo",
-       {
-           panel::BackgroundWorker(&screen),
        }},
   };
 
