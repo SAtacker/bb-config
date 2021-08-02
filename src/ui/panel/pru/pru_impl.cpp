@@ -8,119 +8,96 @@ using namespace ftxui;
 
 namespace ui {
 
-// A basic implementation of PanelBase with no internal logic.
-class PRUImpl : public PanelBase {
+class Pru : public ComponentBase {
  public:
-  PRUImpl() {
-    updateStatus();
-
-    for (const auto& name : pruList) {
-      auto onStr = name + L" On";
-      auto offStr = name + L" Off";
-      pruButtons.push_back(std::make_pair<Component, Component>(
-          Button(onStr, [&] { changePruState(name, true); }),
-          Button(offStr, [&] { changePruState(name, false); })));
-    }
-    Components buttons;
-    for (auto button : pruButtons) {
-      buttons.push_back(Container::Horizontal({
-          button.first,
-          button.second,
-      }));
-    }
-    Add(Container::Vertical(std::move(buttons)));
+  Pru(std::string path) : path_(path) {
+    Fetch();
+    BuildUI();
   }
-  ~PRUImpl() = default;
+
+  std::string name() const { return name_; }
+  std::string firmware() const { return firmware_; }
+  std::string state() const { return state_; }
+
+ private:
+  void Fetch() {
+    std::ifstream(path_ + "/name") >> name_;
+    std::ifstream(path_ + "/firmware") >> firmware_;
+    std::ifstream(path_ + "/state") >> state_;
+  }
+
+  void StoreState(std::string state) {
+    std::ofstream(path_ + "/state") << state;
+    Fetch();
+  };
+
+  void BuildUI() {
+    ButtonOption opt;
+    opt.border = false;
+    Add(Container::Horizontal({
+        Button(
+            L"[Start]", [&] { StoreState("start"); }, opt),
+        Button(
+            L"[Stop]", [&] { StoreState("stop"); }, opt),
+    }));
+  }
+
+  std::string path_;
+  std::string name_;
+  std::string state_;
+  std::string firmware_;
+};
+
+class PRUPanel : public PanelBase {
+ public:
+  PRUPanel() {
+    BuildUI();
+  }
   std::wstring Title() override { return L"PRU enable/disable"; }
 
  private:
-  void changePruState(std::wstring pru, bool state_) {
-    auto statePath = to_string(pruNamePath[pru] + L"/state");
-    auto state = state_ ? "start" : "stop";
-    std::ofstream(statePath) << state;
-  }
-
-  void updateStatus() {
-    pruList.clear();
-    for (const auto& rproc :
+  void BuildUI() {
+    Component vertical_list = Container::Vertical({});
+    for (const auto& it :
          std::filesystem::directory_iterator("/sys/class/remoteproc/")) {
-      std::string state, name, fw;
-      std::ifstream(std::string(rproc.path()) + "/state") >> state;
-      std::ifstream(std::string(rproc.path()) + "/name") >> name;
-      std::ifstream(std::string(rproc.path()) + "/firmware") >> fw;
-      pruNameStates[to_wstring(name)] = to_wstring(state);
-      pruNamePath[to_wstring(name)] = to_wstring(std::string(rproc.path()));
-      pruNameFw[to_wstring(name)] = to_wstring(fw);
-      pruList.push_back(to_wstring(name));
+      auto pru = std::make_shared<Pru>(it.path());
+      children_.push_back(pru);
+      vertical_list->Add(pru);
     }
+    Add(vertical_list);
   }
 
   Element Render() override {
-    Elements elements, statusList, nameList, notifList, rightButtons,
-        leftButtons;
-    nameList.push_back(text(L" PRU ") | border);
-    statusList.push_back(text(L" Status ") | border);
-    notifList.push_back(text(L" Info ") | border);
-    updateStatus();
+    Elements name_list = {text(L"PRU"), separator()};
+    Elements firmware_list = {text(L"Firmware"), separator()};
+    Elements state_list = {text(L"State"), separator()};
+    Elements action_list = {text(L"Actions"), separator()};
 
-    for (auto pru : pruList) {
-      std::wstring fw = pruNameFw[pru], notif;
-      if (std::filesystem::exists("/lib/firmware/" + to_string(fw))) {
-        if (std::filesystem::file_size("/lib/firmware/" + to_string(fw)) == 0) {
-          notif = L" Warning: " + fw + L" Empty";
-        } else {
-          notif = L" Loaded Firmware: " + fw;
-        }
-      } else {
-        notif = L" Firmware Not found / Not Supported";
-      }
-      notifList.push_back(text(notif));
-      nameList.push_back(text(pru));
-      statusList.push_back(text(pruNameStates[pru]));
+    for (const auto& child : children_) {
+      name_list.push_back(text(to_wstring(child->name())));
+      firmware_list.push_back(text(to_wstring(child->firmware())));
+      state_list.push_back(text(to_wstring(child->state())));
+      action_list.push_back(child->Render());
     }
 
-    for (auto buttons : pruButtons) {
-      leftButtons.push_back(buttons.first->Render());
-    }
-    for (auto buttons : pruButtons) {
-      rightButtons.push_back(buttons.second->Render());
-    }
-
-    auto table1 = hbox({
-        vbox(nameList),
-        separator(),
-        vbox(statusList),
-        separator(),
-        vbox(notifList),
-    });
-    auto table2 = hbox({
-        vbox(leftButtons),
-        separator(),
-        vbox(rightButtons),
-    });
-    auto tabularLayout = vbox({
-        table1 | hcenter,
-        separator(),
-        table2 | center,
-    });
-    elements.push_back(tabularLayout | flex | border);
-    return vbox(elements);
+    return hbox({
+               vbox(std::move(name_list)),
+               separator(),
+               vbox(std::move(firmware_list)),
+               separator(),
+               vbox(std::move(state_list)),
+               separator(),
+               vbox(std::move(action_list)) | flex,
+           }) |
+           border;
   }
 
-  Component pruPanel;
-  std::vector<std::pair<Component, Component>> pruButtons;
-  std::unordered_map<std::wstring, std::wstring>
-      pruNameStates;  // PRU name - State
-  std::unordered_map<std::wstring, std::wstring>
-      pruNamePath;  // PRU name - Path
-  std::unordered_map<std::wstring, std::wstring>
-      pruNameFw;  // PRU name - Firmware
-  std::vector<std::wstring> pruList;
+  std::vector<std::shared_ptr<Pru>> children_;
 };
 
 namespace panel {
 Panel PRU() {
-  return Make<PRUImpl>();
+  return Make<PRUPanel>();
 }
 
 }  // namespace panel
