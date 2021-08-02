@@ -6,13 +6,7 @@ cmake ..
 make -j$(nproc)
 ```
 ### Current Status
-* Before:
-[![asciicast](https://asciinema.org/a/427430.svg)](https://asciinema.org/a/427430)
-* After
-[![asciicast](https://asciinema.org/a/427432.svg)](https://asciinema.org/a/427432)
-
-* Implemented Stuff
-[![asciicast](https://asciinema.org/a/428204.svg)](https://asciinema.org/a/428204)
+[![asciicast](https://asciinema.org/a/428468.svg)](https://asciinema.org/a/428468)
 
 ### For Arm
 

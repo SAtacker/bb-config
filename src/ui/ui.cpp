@@ -61,7 +61,7 @@ struct Group {
 
 class MainMenu : public ComponentBase {
  public:
-  MainMenu(std::vector<Group> menu_group) {
+  MainMenu(std::vector<Group> menu_group, ScreenInteractive* screen) {
     // The sub menu:
     index_.resize(menu_group.size());
     menu_entries_.resize(menu_group.size());
@@ -92,9 +92,18 @@ class MainMenu : public ComponentBase {
     group_menu_ = Container::Vertical(menu_, &group_index_);
     group_tab_ = Container::Tab(tab_, &group_index_);
 
-    Add(Container::Horizontal({
-        group_menu_,
-        group_tab_,
+    ButtonOption exitButtonOption;
+    exitButtonOption.border = false;
+    exit_button_ = Button(L"Exit", screen->ExitLoopClosure(), exitButtonOption);
+
+    Add(Container::Vertical({
+        exit_button_,
+        Container::Horizontal({
+            Container::Vertical({
+                group_menu_,
+            }),
+            group_tab_,
+        }),
     }));
   }
 
@@ -102,19 +111,21 @@ class MainMenu : public ComponentBase {
     iteration_++;
     auto title =
         text(L" beagle-config ") | bold | color(Color::Cyan1) | hcenter;
-    return window(title, hbox({
-                             vbox({
-                                 hbox({
-                                     spinner(5, iteration_),
-                                     text(L"  beagle-config"),
-                                     filler(),
-                                 }),
-                                 separator(),
-                                 group_menu_->Render() | yframe,
-                             }),
-                             separator(),
-                             group_tab_->Render() | flex,
-                         })) |
+    return window(
+               title,
+               hbox({
+                   vbox({
+                       hbox({
+                           spinner(5, iteration_),
+                           text(L"  beagle-config"),
+                           filler(),
+                           exit_button_->Render() | color(Color::DarkOrange3),
+                       }),
+                       group_menu_->Render() | yframe,
+                   }),
+                   separator(),
+                   group_tab_->Render() | flex,
+               })) |
            bgcolor(Color::Black);
   }
 
@@ -129,6 +140,7 @@ class MainMenu : public ComponentBase {
   int group_index_ = 0;
   Component group_menu_;
   Component group_tab_;
+  Component exit_button_;
 
   // Allow visualizing when the UI is updated.
   int iteration_ = 0;
@@ -170,21 +182,8 @@ void Loop() {
        }},
   };
 
-  Component main_menu = Make<MainMenu>(std::move(groups));
+  Component main_menu = Make<MainMenu>(std::move(groups), &screen);
   screen.Loop(main_menu);
-}
-
-std::string manage_command(const char* cmd) {
-  std::array<char, 128> buffer;
-  std::string result;
-  std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
-  if (!pipe) {
-    throw std::runtime_error("popen() failed!");
-  }
-  while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
-    result += buffer.data();
-  }
-  return result;
 }
 
 }  // namespace ui
