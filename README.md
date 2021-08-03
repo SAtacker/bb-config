@@ -6,7 +6,7 @@ cmake ..
 make -j$(nproc)
 ```
 ### Current Status
-[![asciicast](https://asciinema.org/a/428468.svg)](https://asciinema.org/a/428468)
+[![asciicast](https://asciinema.org/a/428614.svg)](https://asciinema.org/a/428614)
 
 ### For Arm
 

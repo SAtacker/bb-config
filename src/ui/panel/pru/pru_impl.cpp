@@ -18,12 +18,22 @@ class Pru : public ComponentBase {
   std::string name() const { return name_; }
   std::string firmware() const { return firmware_; }
   std::string state() const { return state_; }
+  std::string info() const { return info_; }
 
  private:
   void Fetch() {
     std::ifstream(path_ + "/name") >> name_;
     std::ifstream(path_ + "/firmware") >> firmware_;
     std::ifstream(path_ + "/state") >> state_;
+    if (std::filesystem::exists("/lib/firmware/" + firmware_)) {
+      if (std::filesystem::file_size("/lib/firmware/" + firmware_) == 0) {
+        info_ = " Warning: " + firmware_ + " Empty";
+      } else {
+        info_ = " Loaded Firmware: " + firmware_;
+      }
+    } else {
+      info_ = " Firmware Not found / Not Supported";
+    }
   }
 
   void StoreState(std::string state) {
@@ -46,13 +56,12 @@ class Pru : public ComponentBase {
   std::string name_;
   std::string state_;
   std::string firmware_;
+  std::string info_;
 };
 
 class PRUPanel : public PanelBase {
  public:
-  PRUPanel() {
-    BuildUI();
-  }
+  PRUPanel() { BuildUI(); }
   std::wstring Title() override { return L"PRU enable/disable"; }
 
  private:
@@ -72,24 +81,28 @@ class PRUPanel : public PanelBase {
     Elements firmware_list = {text(L"Firmware"), separator()};
     Elements state_list = {text(L"State"), separator()};
     Elements action_list = {text(L"Actions"), separator()};
+    Elements info_list = {text(L"Info"), separator()};
 
     for (const auto& child : children_) {
       name_list.push_back(text(to_wstring(child->name())));
       firmware_list.push_back(text(to_wstring(child->firmware())));
       state_list.push_back(text(to_wstring(child->state())));
       action_list.push_back(child->Render());
+      info_list.push_back(text(to_wstring(child->info())));
     }
 
-    return hbox({
-               vbox(std::move(name_list)),
-               separator(),
-               vbox(std::move(firmware_list)),
-               separator(),
-               vbox(std::move(state_list)),
-               separator(),
-               vbox(std::move(action_list)) | flex,
-           }) |
-           border;
+    return window(text(L" PRUSS  "), hbox({
+                                         vbox(std::move(name_list)),
+                                         separator(),
+                                         vbox(std::move(firmware_list)),
+                                         separator(),
+                                         vbox(std::move(state_list)),
+                                         separator(),
+                                         vbox(std::move(action_list)) | flex,
+                                         separator(),
+                                         vbox(std::move(info_list)) | flex,
+                                     }) | frame |
+                                         flex);
   }
 
   std::vector<std::shared_ptr<Pru>> children_;
