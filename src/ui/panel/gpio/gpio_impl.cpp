@@ -8,9 +8,32 @@ using namespace ftxui;
 
 namespace ui {
 
+const std::vector<std::wstring> iOentries = {
+    L"IN",
+    L"OUT",
+};
+
+const std::vector<std::wstring> valueEntries = {
+    L"0",
+    L"1",
+};
+
+const std::vector<std::wstring> activeEntries = {
+    L"Low",
+    L"High",
+};
+
+const std::vector<std::wstring> edgeEntries = {
+    L"Pos (+ve)",
+    L"Neg (-ve)",
+    L"Any",
+    L"None",
+};
+
 class Gpio : public ComponentBase {
  public:
-  Gpio(std::string path, int* tab, int* next) : path_(path) {
+  Gpio(std::string path, int* tab, int* next, int* limit) : path_(path) {
+    limit_ = limit;
     tab_ = tab;
     next_ = next;
     Fetch();
@@ -52,31 +75,94 @@ class Gpio : public ComponentBase {
     Fetch();
   };
 
+  void toggleHandler(int i) {
+    auto val = toggles[i];
+    switch (i) {
+      case 0:
+        if (val == 0)
+          StoreDirection("in");
+        else
+          StoreDirection("out");
+        break;
+      case 1:
+        if (val == 0)
+          StoreValue("0");
+        else
+          StoreValue("1");
+        break;
+      case 2:
+        if (val == 0)
+          StoreActiveLow("0");
+        else
+          StoreActiveLow("1");
+        break;
+      case 3:
+        switch (val) {
+          case 0:
+            StoreEdge("rising");
+            break;
+          case 1:
+            StoreEdge("falling");
+            break;
+          case 2:
+            StoreEdge("both");
+            break;
+          case 3:
+            StoreEdge("none");
+            break;
+        }
+        break;
+    }
+  }
+
   void BuildUI() {
+    ToggleOption iOtoggleOpt;
+    ToggleOption valueToggleOpt;
+    ToggleOption activeToggleOpt;
+    ToggleOption edgeToggleOpt;
+    iOtoggleOpt.on_enter = [&] { toggleHandler(0); };
+    valueToggleOpt.on_change = [&] { toggleHandler(1); };
+    activeToggleOpt.on_change = [&] { toggleHandler(2); };
+    edgeToggleOpt.on_change = [&] { toggleHandler(3); };
+    toggleComponents.push_back(Toggle(&iOentries, &toggles[0], iOtoggleOpt));
+    toggleComponents.push_back(
+        Toggle(&valueEntries, &toggles[1], valueToggleOpt));
+    toggleComponents.push_back(
+        Toggle(&activeEntries, &toggles[2], activeToggleOpt));
+    toggleComponents.push_back(
+        Toggle(&edgeEntries, &toggles[3], edgeToggleOpt));
+    Component actions = Renderer(Container::Vertical(toggleComponents), [&] {
+      return vbox({
+          text(to_wstring(label()) + L" Status "),
+          hbox(text(L" * Direction       : "), text(to_wstring(direction()))),
+          hbox(text(L" * Value           : "), text(to_wstring(value()))),
+          hbox(text(L" * Active Low      : "), text(to_wstring(active_low()))),
+          hbox(text(L" * Edge            : "), text(to_wstring(edge()))),
+          text(L" Actions "),
+          hbox(text(L" * Direction       : "), toggleComponents[0]->Render()),
+          hbox(text(L" * Value           : "), toggleComponents[1]->Render()),
+          hbox(text(L" * Active Low      : "), toggleComponents[2]->Render()),
+          hbox(text(L" * Edge            : "), toggleComponents[3]->Render()),
+      });
+    });
     Add(Container::Vertical(
-        {Container::Horizontal({
-             Button(L"IN", [&] { StoreDirection("in"); }),
-             Button(L"OUT", [&] { StoreDirection("out"); }),
-             Button(L"Value 0", [&] { StoreValue("0"); }),
-             Button(L"Value 1", [&] { StoreValue("1"); }),
-             Button(L"Active Low", [&] { StoreActiveLow("0"); }),
-             Button(L"Active High", [&] { StoreActiveLow("1"); }),
-             Button(L"Edge +ve", [&] { StoreEdge("rising"); }),
-             Button(L"Edge -ve", [&] { StoreEdge("falling"); }),
-             Button(L"Edge Any", [&] { StoreEdge("both"); }),
-             Button(L"Edge none", [&] { StoreEdge("none"); }),
-         }),
-         Container::Horizontal({
-             Button(L"Back to Menu", [&] { *tab_ = 0; }),
-             Button(L"Prev",
-                    [&] {
-                      (*next_)--;
-                      if (*next_ < 0) {
-                        *next_ = 0;
-                      }
-                    }),
-             Button(L"Next", [&] { (*next_)++; }),
-         })}));
+        {actions, Container::Horizontal({
+                      Button(L"Back to Menu", [&] { *tab_ = 0; }),
+                      Button(L"Prev",
+                             [&] {
+                               (*next_)--;
+                               if (*next_ < 0) {
+                                 *next_ = 0;
+                               }
+                             }),
+                      Button(L"Next",
+                             [&] {
+                               (*next_)++;
+                               if (*limit_ < *next_) {
+                                 *next_ = 0;
+                               }
+                             }),
+                  })}));
   }
 
   std::string path_;
@@ -87,6 +173,9 @@ class Gpio : public ComponentBase {
   std::string active_low_;
   int* tab_;
   int* next_;
+  int* limit_;
+  int toggles[4];
+  Components toggleComponents;
 };
 
 class GPIOImpl : public PanelBase {
@@ -105,9 +194,12 @@ class GPIOImpl : public PanelBase {
       std::string gpio_path = it.path();
       if (gpio_path.find("gpiochip") == std::string::npos &&
           gpio_path.find("gpio") != std::string::npos) {
-        auto gpio = std::make_shared<Gpio>(gpio_path, &tab, &selected);
-        children_.push_back(gpio);
-        gpio_individual->Add(gpio);
+        auto gpio = std::make_shared<Gpio>(gpio_path, &tab, &selected, &limit);
+        if (gpio->label().find("P") != std::string::npos) {
+          children_.push_back(gpio);
+          gpio_individual->Add(gpio);
+          limit++;
+        }
       }
     }
 
@@ -120,48 +212,16 @@ class GPIOImpl : public PanelBase {
   }
 
   Element Render() override {
-    Elements name_list = {text(L"Name"), separator()};
-    Elements edge_list = {text(L"Edge"), separator()};
-    Elements direction_list = {text(L"Direction"), separator()};
-    Elements value_list = {text(L"Value"), separator()};
-    Elements active_state_list = {text(L"Active L/H"), separator()};
-    Elements action_list = {text(L"Actions"), separator()};
-
     gpio_names.clear();
     for (const auto& child : children_) {
       gpio_names.push_back(to_wstring(child->label()));
     }
 
-    Element selected_gpio;
     int i = 0;
     if (tab == 1)
       for (const auto& child : children_) {
         if (i == selected) {
-          name_list.push_back(text(to_wstring(child->label())));
-          edge_list.push_back(text(to_wstring(child->edge())));
-          direction_list.push_back(text(to_wstring(child->direction())));
-          value_list.push_back(text(to_wstring(child->value())));
-          active_state_list.push_back(text(to_wstring(child->active_low())));
-          action_list.push_back(hbox(child->Render()));
-          selected_gpio = vbox({
-              hbox({
-                  vbox(std::move(name_list)),
-                  separator(),
-                  vbox(std::move(edge_list)),
-                  separator(),
-                  vbox(std::move(direction_list)),
-                  separator(),
-                  vbox(std::move(value_list)),
-                  separator(),
-                  vbox(std::move(active_state_list)),
-              }) | flex,
-              separator(),
-              hbox({
-                  vbox(std::move(action_list)),
-                  separator(),
-              }) | flex,
-          });
-          return selected_gpio;
+          return child->Render();
         }
         i++;
       }
@@ -175,6 +235,7 @@ class GPIOImpl : public PanelBase {
   Component gpio_individual;
   int selected = 0;
   int tab = 0;
+  int limit = 0;
 };
 
 namespace panel {
