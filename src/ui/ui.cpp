@@ -112,8 +112,7 @@ class MainMenu : public ComponentBase {
 
   Element Render() override {
     iteration_++;
-    auto title =
-        text(" beagle-config ") | bold | color(Color::Cyan1) | hcenter;
+    auto title = text(" beagle-config ") | bold | color(Color::Cyan1) | hcenter;
     return window(
                title,
                hbox({
