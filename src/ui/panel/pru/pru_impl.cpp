@@ -92,17 +92,17 @@ class PRUPanel : public PanelBase {
     }
 
     return window(text(" PRUSS  "), hbox({
-                                         vbox(std::move(name_list)),
-                                         separator(),
-                                         vbox(std::move(firmware_list)),
-                                         separator(),
-                                         vbox(std::move(state_list)),
-                                         separator(),
-                                         vbox(std::move(action_list)) | flex,
-                                         separator(),
-                                         vbox(std::move(info_list)) | flex,
-                                     }) | frame |
-                                         flex);
+                                        vbox(std::move(name_list)),
+                                        separator(),
+                                        vbox(std::move(firmware_list)),
+                                        separator(),
+                                        vbox(std::move(state_list)),
+                                        separator(),
+                                        vbox(std::move(action_list)) | flex,
+                                        separator(),
+                                        vbox(std::move(info_list)) | flex,
+                                    }) | frame |
+                                        flex);
   }
 
   std::vector<std::shared_ptr<Pru>> children_;

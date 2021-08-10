@@ -113,8 +113,7 @@ class ICSImpl : public PanelBase {
     if (!route_add_) {
       int error = ioctl(socket_file_descriptor, SIOCDELRT, &route);
       if (error != 0) {
-        std::cerr << "Error ioctl del rt_gateway: " << gateway_str
-                  << "\n"
+        std::cerr << "Error ioctl del rt_gateway: " << gateway_str << "\n"
                   << strerror(errno) << std::endl;
       }
       shutdown(socket_file_descriptor, SHUT_RDWR);
@@ -124,8 +123,7 @@ class ICSImpl : public PanelBase {
     /* Add it */
     int error = ioctl(socket_file_descriptor, SIOCADDRT, &route);
     if (error != 0) {
-      std::cerr << "Error ioctl add rt_gateway: " << gateway_str
-                << "\n"
+      std::cerr << "Error ioctl add rt_gateway: " << gateway_str << "\n"
                 << strerror(errno) << std::endl;
     }
 
@@ -156,8 +154,7 @@ class ICSImpl : public PanelBase {
     file << "nameserver " << dns_1_str << std::endl;
     file << "nameserver " << dns_2_str << std::endl;
 
-    std::cerr << "Successful " << dns_1_str << " "
-              << dns_2_str << std::endl;
+    std::cerr << "Successful " << dns_1_str << " " << dns_2_str << std::endl;
 
     /* Close the socket */
     shutdown(socket_file_descriptor, SHUT_RDWR);
