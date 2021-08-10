@@ -46,9 +46,9 @@ class Pru : public ComponentBase {
     opt.border = false;
     Add(Container::Horizontal({
         Button(
-            L"[Start]", [&] { StoreState("start"); }, opt),
+            "[Start]", [&] { StoreState("start"); }, opt),
         Button(
-            L"[Stop]", [&] { StoreState("stop"); }, opt),
+            "[Stop]", [&] { StoreState("stop"); }, opt),
     }));
   }
 
@@ -62,7 +62,7 @@ class Pru : public ComponentBase {
 class PRUPanel : public PanelBase {
  public:
   PRUPanel() { BuildUI(); }
-  std::wstring Title() override { return L"PRU enable/disable"; }
+  std::string Title() override { return "PRU enable/disable"; }
 
  private:
   void BuildUI() {
@@ -77,21 +77,21 @@ class PRUPanel : public PanelBase {
   }
 
   Element Render() override {
-    Elements name_list = {text(L"PRU"), separator()};
-    Elements firmware_list = {text(L"Firmware"), separator()};
-    Elements state_list = {text(L"State"), separator()};
-    Elements action_list = {text(L"Actions"), separator()};
-    Elements info_list = {text(L"Info"), separator()};
+    Elements name_list = {text("PRU"), separator()};
+    Elements firmware_list = {text("Firmware"), separator()};
+    Elements state_list = {text("State"), separator()};
+    Elements action_list = {text("Actions"), separator()};
+    Elements info_list = {text("Info"), separator()};
 
     for (const auto& child : children_) {
-      name_list.push_back(text(to_wstring(child->name())));
-      firmware_list.push_back(text(to_wstring(child->firmware())));
-      state_list.push_back(text(to_wstring(child->state())));
+      name_list.push_back(text(child->name()));
+      firmware_list.push_back(text(child->firmware()));
+      state_list.push_back(text(child->state()));
       action_list.push_back(child->Render());
-      info_list.push_back(text(to_wstring(child->info())));
+      info_list.push_back(text(child->info()));
     }
 
-    return window(text(L" PRUSS  "), hbox({
+    return window(text(" PRUSS  "), hbox({
                                          vbox(std::move(name_list)),
                                          separator(),
                                          vbox(std::move(firmware_list)),

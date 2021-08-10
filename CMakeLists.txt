@@ -8,7 +8,7 @@ set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
 
 FetchContent_Declare(ftxui
   GIT_REPOSITORY https://github.com/ArthurSonzogni/FTXUI
-  GIT_TAG fe290e7fed7086abe4fc3b3b21bcc71a07b89d47
+  GIT_TAG 98f49a581c63abe4399a99a207d384e969ca1260
 )
 
 FetchContent_GetProperties(ftxui)
@@ -19,7 +19,6 @@ endif()
 
 add_executable(beagle-config 
   src/main.cpp 
-  src/ui/focusable.hpp
   src/ui/panel/emmc/emmc_impl.cpp
   src/ui/panel/gpio/gpio_impl.cpp
   src/ui/panel/ics/ics_impl.cpp

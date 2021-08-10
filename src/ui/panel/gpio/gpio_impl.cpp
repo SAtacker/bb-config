@@ -6,14 +6,14 @@ using namespace ftxui;
 
 namespace ui {
 
-const std::vector<std::wstring> toggle_entries = {
-    L"Input",
-    L"Output",
+const std::vector<std::string> toggle_entries = {
+    "Input",
+    "Output",
 };
 
 class GPIOImpl : public PanelBase {
  public:
-  std::wstring Title() override { return L"GPIO configuration"; }
+  std::string Title() override { return "GPIO configuration"; }
   GPIOImpl() { Add(renderer); }
   ~GPIOImpl() = default;
 
@@ -30,12 +30,12 @@ class GPIOImpl : public PanelBase {
       Container::Vertical({gpio[0], gpio[1], gpio[2], gpio[3], gpio[4]});
   Component renderer = Renderer(layout, [this] {
     return vbox({
-        text(L"GPIO:"),
-        hbox(text(L" [1]: "), gpio[0]->Render() | border),
-        hbox(text(L" [2]: "), gpio[1]->Render() | border),
-        hbox(text(L" [3]: "), gpio[2]->Render() | border),
-        hbox(text(L" [4]: "), gpio[3]->Render() | border),
-        hbox(text(L" [5]: "), gpio[4]->Render() | border),
+        text("GPIO:"),
+        hbox(text(" [1]: "), gpio[0]->Render() | border),
+        hbox(text(" [2]: "), gpio[1]->Render() | border),
+        hbox(text(" [3]: "), gpio[2]->Render() | border),
+        hbox(text(" [4]: "), gpio[3]->Render() | border),
+        hbox(text(" [5]: "), gpio[4]->Render() | border),
     });
   });
 };
