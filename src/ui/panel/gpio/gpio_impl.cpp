@@ -188,7 +188,7 @@ class GPIOImpl : public PanelBase {
     MenuOption menuOpt;
     menuOpt.on_enter = [&] { tab = 1; };
     gpio_menu = Menu(&gpio_names, &selected, menuOpt);
-    gpio_individual = Container::Vertical({});
+    gpio_individual = Container::Vertical({}, &selected);
     for (const auto& it :
          std::filesystem::directory_iterator("/sys/class/gpio/")) {
       std::string gpio_path = it.path();
