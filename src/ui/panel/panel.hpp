@@ -26,6 +26,7 @@ Panel EMMC();
 Panel Led();
 Panel WiFi(ScreenInteractive*);
 Panel BackgroundWorker(ScreenInteractive*);
+Panel About();
 }  // namespace panel
 }  // namespace ui
 

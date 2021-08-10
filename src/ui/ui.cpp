@@ -31,7 +31,7 @@ class PanelAdapter : public ComponentBase {
     return vbox({
                title_->Render(),
                separator(),
-               vbox({panel_->Render(), filler()}),
+               panel_->Render() | flex,
            }) |
            flex;
   }
@@ -180,7 +180,7 @@ void Loop() {
       {"Info",
        {
            panel::PlaceHolder("Update"),
-           panel::PlaceHolder("About"),
+           panel::About(),
        }},
   };
 
