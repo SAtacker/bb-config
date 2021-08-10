@@ -23,6 +23,7 @@ add_executable(beagle-config
   src/ui/panel/gpio/gpio_impl.cpp
   src/ui/panel/ics/ics_impl.cpp
   src/ui/panel/led/led_impl.cpp
+  src/ui/panel/about/about_impl.cpp
   src/ui/panel/panel.hpp
   src/ui/panel/placeholder/placeholder_impl.cpp
   src/ui/panel/pru/pru_impl.cpp
@@ -39,7 +40,8 @@ target_link_libraries(beagle-config
 )
 
 target_include_directories(beagle-config
-  PRIVATE src/
+  PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/
+  PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src/
 )
 
 set_property(TARGET beagle-config PROPERTY CXX_STANDARD 17)
@@ -58,3 +60,26 @@ if (BEAGLE_CONFIG_SANITIZE)
   target_compile_options(beagle-config PRIVATE -fsanitize=address,leak,undefined)
   target_link_libraries(beagle-config PRIVATE -fsanitize=address,leak,undefined)
 endif()
+
+set(git_version "unknown")
+set(git_hash "unknown")
+find_package(Git QUIET)
+if (Git_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/.git")
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} rev-list --count HEAD
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE git_version
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+  execute_process(
+    COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    OUTPUT_VARIABLE git_hash
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+endif()
+
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/environment.hpp.in
+  ${CMAKE_CURRENT_BINARY_DIR}/src/environment.hpp
+)
