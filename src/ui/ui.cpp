@@ -97,39 +97,39 @@ class MainMenu : public ComponentBase {
 
     ButtonOption exitButtonOption;
     exitButtonOption.border = false;
-    exit_button_ = Button("Exit", screen->ExitLoopClosure(), exitButtonOption);
+    exit_button_ =
+        Button("[Exit]", screen->ExitLoopClosure(), exitButtonOption);
 
-    Add(Container::Vertical({
+    auto left_container = Container::Vertical({
         exit_button_,
-        Container::Horizontal({
-            Container::Vertical({
-                group_menu_,
-            }),
-            group_tab_,
-        }),
-    }));
+        group_menu_,
+    });
+
+    auto menu_renderer = Renderer(left_container, [&] {
+      return vbox({
+          hbox({
+              spinner(5, iteration_),
+              text("  beagle-config"),
+              filler(),
+              exit_button_->Render() | color(Color::DarkOrange3),
+          }),
+          group_menu_->Render() | yframe,
+      });
+    });
+
+    auto content_renderer =
+        Renderer(group_tab_, [&] { return group_tab_->Render() | flex; });
+
+    resizeable_split_ =
+        ResizableSplitLeft(menu_renderer, content_renderer, &menu_width_);
+
+    Add(resizeable_split_);
   }
 
   Element Render() override {
     iteration_++;
-    auto title =
-        text(" beagle-config ") | bold | color(Color::Cyan1) | hcenter;
-    return window(
-               title,
-               hbox({
-                   vbox({
-                       hbox({
-                           spinner(5, iteration_),
-                           text("  beagle-config"),
-                           filler(),
-                           exit_button_->Render() | color(Color::DarkOrange3),
-                       }),
-                       group_menu_->Render() | yframe,
-                   }),
-                   separator(),
-                   group_tab_->Render() | flex,
-               })) |
-           bgcolor(Color::Black);
+    auto title = text(" beagle-config ") | bold | color(Color::Cyan1) | hcenter;
+    return window(title, resizeable_split_->Render()) | bgcolor(Color::Black);
   }
 
  private:
@@ -144,6 +144,9 @@ class MainMenu : public ComponentBase {
   Component group_menu_;
   Component group_tab_;
   Component exit_button_;
+
+  int menu_width_ = 35;
+  Component resizeable_split_;
 
   // Allow visualizing when the UI is updated.
   int iteration_ = 0;
