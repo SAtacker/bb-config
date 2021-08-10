@@ -75,42 +75,40 @@ class Gpio : public ComponentBase {
     Fetch();
   };
 
-  void toggleHandler(int i) {
-    auto val = toggles[i];
-    switch (i) {
+  void handleDirection() {
+    if (ioTog == 0)
+      StoreDirection("in");
+    else
+      StoreDirection("out");
+  }
+
+  void handleValue() {
+    if (valTog == 0)
+      StoreValue("0");
+    else
+      StoreValue("1");
+  }
+
+  void handleActiveLow() {
+    if (activeTog == 0)
+      StoreActiveLow("0");
+    else
+      StoreActiveLow("1");
+  }
+
+  void handleEdge() {
+    switch (edgeTog) {
       case 0:
-        if (val == 0)
-          StoreDirection("in");
-        else
-          StoreDirection("out");
+        StoreEdge("rising");
         break;
       case 1:
-        if (val == 0)
-          StoreValue("0");
-        else
-          StoreValue("1");
+        StoreEdge("falling");
         break;
       case 2:
-        if (val == 0)
-          StoreActiveLow("0");
-        else
-          StoreActiveLow("1");
+        StoreEdge("both");
         break;
       case 3:
-        switch (val) {
-          case 0:
-            StoreEdge("rising");
-            break;
-          case 1:
-            StoreEdge("falling");
-            break;
-          case 2:
-            StoreEdge("both");
-            break;
-          case 3:
-            StoreEdge("none");
-            break;
-        }
+        StoreEdge("none");
         break;
     }
   }
@@ -120,31 +118,37 @@ class Gpio : public ComponentBase {
     ToggleOption valueToggleOpt;
     ToggleOption activeToggleOpt;
     ToggleOption edgeToggleOpt;
-    iOtoggleOpt.on_enter = [&] { toggleHandler(0); };
-    valueToggleOpt.on_change = [&] { toggleHandler(1); };
-    activeToggleOpt.on_change = [&] { toggleHandler(2); };
-    edgeToggleOpt.on_change = [&] { toggleHandler(3); };
-    toggleComponents.push_back(Toggle(&iOentries, &toggles[0], iOtoggleOpt));
-    toggleComponents.push_back(
-        Toggle(&valueEntries, &toggles[1], valueToggleOpt));
-    toggleComponents.push_back(
-        Toggle(&activeEntries, &toggles[2], activeToggleOpt));
-    toggleComponents.push_back(
-        Toggle(&edgeEntries, &toggles[3], edgeToggleOpt));
-    Component actions = Renderer(Container::Vertical(toggleComponents), [&] {
-      return vbox({
-          text(to_wstring(label()) + L" Status "),
-          hbox(text(L" * Direction       : "), text(to_wstring(direction()))),
-          hbox(text(L" * Value           : "), text(to_wstring(value()))),
-          hbox(text(L" * Active Low      : "), text(to_wstring(active_low()))),
-          hbox(text(L" * Edge            : "), text(to_wstring(edge()))),
-          text(L" Actions "),
-          hbox(text(L" * Direction       : "), toggleComponents[0]->Render()),
-          hbox(text(L" * Value           : "), toggleComponents[1]->Render()),
-          hbox(text(L" * Active Low      : "), toggleComponents[2]->Render()),
-          hbox(text(L" * Edge            : "), toggleComponents[3]->Render()),
-      });
-    });
+    iOtoggleOpt.on_enter = [&] { handleDirection(); };
+    valueToggleOpt.on_enter = [&] { handleValue(); };
+    activeToggleOpt.on_enter = [&] { handleActiveLow(); };
+    edgeToggleOpt.on_enter = [&] { handleEdge(); };
+    ioToggle = Toggle(&iOentries, &ioTog, iOtoggleOpt);
+    valToggle = Toggle(&valueEntries, &valTog, valueToggleOpt);
+    activeToggle = Toggle(&activeEntries, &activeTog, activeToggleOpt);
+    edgeToggle = Toggle(&edgeEntries, &edgeTog, edgeToggleOpt);
+    Component actions = Renderer(
+        Container::Vertical({
+            ioToggle,
+            valToggle,
+            activeToggle,
+            edgeToggle,
+        }),
+        [&] {
+          return vbox({
+              text(to_wstring(label()) + L" Status "),
+              hbox(text(L" * Direction       : "),
+                   text(to_wstring(direction()))),
+              hbox(text(L" * Value           : "), text(to_wstring(value()))),
+              hbox(text(L" * Active Low      : "),
+                   text(to_wstring(active_low()))),
+              hbox(text(L" * Edge            : "), text(to_wstring(edge()))),
+              text(L" Actions "),
+              hbox(text(L" * Direction       : "), ioToggle->Render()),
+              hbox(text(L" * Value           : "), valToggle->Render()),
+              hbox(text(L" * Active Low      : "), activeToggle->Render()),
+              hbox(text(L" * Edge            : "), edgeToggle->Render()),
+          });
+        });
     Add(Container::Vertical(
         {actions, Container::Horizontal({
                       Button(L"Back to Menu", [&] { *tab_ = 0; }),
@@ -174,8 +178,14 @@ class Gpio : public ComponentBase {
   int* tab_;
   int* next_;
   int* limit_;
-  int toggles[4];
-  Components toggleComponents;
+  int ioTog;
+  int activeTog;
+  int valTog;
+  int edgeTog;
+  Component ioToggle;
+  Component activeToggle;
+  Component valToggle;
+  Component edgeToggle;
 };
 
 class GPIOImpl : public PanelBase {
