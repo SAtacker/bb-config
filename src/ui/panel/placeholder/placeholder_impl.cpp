@@ -7,20 +7,20 @@ namespace ui {
 
 class PlaceHolderImpl : public PanelBase {
  public:
-  PlaceHolderImpl(std::wstring title) : title_(title) {}
+  PlaceHolderImpl(std::string title) : title_(title) {}
   ~PlaceHolderImpl(){};
-  std::wstring Title() override { return title_; }
+  std::string Title() override { return title_; }
   Element Render() override {
     auto style = Focused() ? inverted : nothing;
-    return text(L"Not implemented") | style;
+    return text("Not implemented") | style;
   }
 
  private:
-  std::wstring title_;
+  std::string title_;
 };
 
 namespace panel {
-Panel PlaceHolder(const std::wstring& title) {
+Panel PlaceHolder(const std::string& title) {
   return Make<PlaceHolderImpl>(title);
 }
 

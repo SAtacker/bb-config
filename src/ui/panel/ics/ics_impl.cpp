@@ -47,13 +47,13 @@ class ICSImpl : public PanelBase {
     LoadConfig();
     Add(Container::Vertical({
         Container::Horizontal({
-            Button(L"ICS On",
+            Button("ICS On",
                    [&] {
                      route_add_ = true;
                      route_h();
                      StoreConfig();
                    }),
-            Button(L"ICS Off",
+            Button("ICS Off",
                    [&] {
                      route_add_ = false;
                      route_h();
@@ -61,15 +61,15 @@ class ICSImpl : public PanelBase {
                    }),
         }),
         Container::Horizontal({
-            Input(&gateway_str, L" Gateway "),
-            Input(&dns_1_str, L" DNS 1 "),
-            Input(&dns_2_str, L" DNS 2 "),
+            Input(&gateway_str, " Gateway "),
+            Input(&dns_1_str, " DNS 1 "),
+            Input(&dns_2_str, " DNS 2 "),
         }),
     }));
   }
   ~ICSImpl() = default;
-  std::wstring Title() override {
-    return L"Internet Sharing and Client Configuration";
+  std::string Title() override {
+    return "Internet Sharing and Client Configuration";
   }
 
  private:
@@ -91,8 +91,7 @@ class ICSImpl : public PanelBase {
     rtentry route;
     memset(&route, 0, sizeof(route));
 
-    std::string gateway_string = to_string(gateway_str);
-    auto gw_addr = inet_addr(gateway_string.c_str());
+    auto gw_addr = inet_addr(gateway_str.c_str());
 
     sockaddr_in* rt_gateway = reinterpret_cast<sockaddr_in*>(&route.rt_gateway);
     rt_gateway->sin_family = AF_INET;
@@ -114,8 +113,7 @@ class ICSImpl : public PanelBase {
     if (!route_add_) {
       int error = ioctl(socket_file_descriptor, SIOCDELRT, &route);
       if (error != 0) {
-        std::cerr << "Error ioctl del rt_gateway: " << to_string(gateway_str)
-                  << "\n"
+        std::cerr << "Error ioctl del rt_gateway: " << gateway_str << "\n"
                   << strerror(errno) << std::endl;
       }
       shutdown(socket_file_descriptor, SHUT_RDWR);
@@ -125,8 +123,7 @@ class ICSImpl : public PanelBase {
     /* Add it */
     int error = ioctl(socket_file_descriptor, SIOCADDRT, &route);
     if (error != 0) {
-      std::cerr << "Error ioctl add rt_gateway: " << to_string(gateway_str)
-                << "\n"
+      std::cerr << "Error ioctl add rt_gateway: " << gateway_str << "\n"
                 << strerror(errno) << std::endl;
     }
 
@@ -154,11 +151,10 @@ class ICSImpl : public PanelBase {
     file << "# Last changed by beagle-config on: " << ti << std::endl;
 
     /* Stores nameserver strings */
-    file << "nameserver " << to_string(dns_1_str) << std::endl;
-    file << "nameserver " << to_string(dns_2_str) << std::endl;
+    file << "nameserver " << dns_1_str << std::endl;
+    file << "nameserver " << dns_2_str << std::endl;
 
-    std::cerr << "Successful " << to_string(dns_1_str) << " "
-              << to_string(dns_2_str) << std::endl;
+    std::cerr << "Successful " << dns_1_str << " " << dns_2_str << std::endl;
 
     /* Close the socket */
     shutdown(socket_file_descriptor, SHUT_RDWR);
@@ -203,17 +199,17 @@ class ICSImpl : public PanelBase {
       auto value = line.substr(delimiterPos + 1);
 
       if (name == "dns1") {
-        dns_1_str = to_wstring(value);
+        dns_1_str = value;
         continue;
       }
 
       if (name == "dns2") {
-        dns_2_str = to_wstring(value);
+        dns_2_str = value;
         continue;
       }
 
       if (name == "gateway") {
-        gateway_str = to_wstring(value);
+        gateway_str = value;
         continue;
       }
     }
@@ -232,14 +228,14 @@ class ICSImpl : public PanelBase {
         std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
     config_file << "# Last Updated : " << std::ctime(&time_);
-    config_file << "gateway=" << to_string(gateway_str) << std::endl;
-    config_file << "dns1=" << to_string(dns_1_str) << std::endl;
-    config_file << "dns2=" << to_string(dns_2_str) << std::endl;
+    config_file << "gateway=" << gateway_str << std::endl;
+    config_file << "dns1=" << dns_1_str << std::endl;
+    config_file << "dns2=" << dns_2_str << std::endl;
   }
 
-  std::wstring gateway_str;
-  std::wstring dns_1_str;
-  std::wstring dns_2_str;
+  std::string gateway_str;
+  std::string dns_1_str;
+  std::string dns_2_str;
 };
 
 }  // namespace

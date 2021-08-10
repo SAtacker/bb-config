@@ -12,13 +12,13 @@ using namespace ftxui;
 class PanelBase : public ftxui::ComponentBase {
  public:
   virtual ~PanelBase() {}
-  virtual std::wstring Title() = 0;
+  virtual std::string Title() = 0;
 };
 
 using Panel = std::shared_ptr<PanelBase>;
 
 namespace panel {
-Panel PlaceHolder(const std::wstring& title);
+Panel PlaceHolder(const std::string& title);
 Panel PRU();
 Panel GPIO();
 Panel ICS();

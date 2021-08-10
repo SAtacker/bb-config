@@ -4,7 +4,7 @@
 #include <vector>
 #include "ftxui/component/screen_interactive.hpp"
 #include "ftxui/screen/string.hpp"
-#include "ui/focusable.hpp"
+//#include "ui/focusable.hpp"
 #include "ui/panel/panel.hpp"
 
 using namespace ftxui;
@@ -16,7 +16,10 @@ namespace {
 class PanelAdapter : public ComponentBase {
  public:
   PanelAdapter(Panel panel) : panel_(panel) {
-    title_ = Make<Focusable>(panel->Title());
+    title_ = Renderer([&](bool focused) {
+      auto style = focused ? inverted : nothing;
+      return text(panel_->Title()) | style;
+    });
 
     Add(Container::Vertical({
         title_,
@@ -39,9 +42,9 @@ class PanelAdapter : public ComponentBase {
 };
 
 // Add a line with a give |title| on top of a component.
-Component Header(std::wstring title, Component body) {
+Component Header(std::string title, Component body) {
   // Add extra margin on the left.
-  title = L"─" + title;
+  title = "─" + title;
 
   return Renderer(body, [=] {
     return vbox({
@@ -55,7 +58,7 @@ Component Header(std::wstring title, Component body) {
 }
 
 struct Group {
-  std::wstring title;
+  std::string title;
   std::vector<Panel> groups;
 };
 
@@ -94,7 +97,7 @@ class MainMenu : public ComponentBase {
 
     ButtonOption exitButtonOption;
     exitButtonOption.border = false;
-    exit_button_ = Button(L"Exit", screen->ExitLoopClosure(), exitButtonOption);
+    exit_button_ = Button("Exit", screen->ExitLoopClosure(), exitButtonOption);
 
     Add(Container::Vertical({
         exit_button_,
@@ -109,15 +112,14 @@ class MainMenu : public ComponentBase {
 
   Element Render() override {
     iteration_++;
-    auto title =
-        text(L" beagle-config ") | bold | color(Color::Cyan1) | hcenter;
+    auto title = text(" beagle-config ") | bold | color(Color::Cyan1) | hcenter;
     return window(
                title,
                hbox({
                    vbox({
                        hbox({
                            spinner(5, iteration_),
-                           text(L"  beagle-config"),
+                           text("  beagle-config"),
                            filler(),
                            exit_button_->Render() | color(Color::DarkOrange3),
                        }),
@@ -132,7 +134,7 @@ class MainMenu : public ComponentBase {
  private:
   // The nested menu.
   std::vector<int> index_;
-  std::vector<std::vector<std::wstring>> menu_entries_;
+  std::vector<std::vector<std::string>> menu_entries_;
   std::vector<Component> menu_;
   std::vector<Component> tab_;
 
@@ -151,34 +153,34 @@ class MainMenu : public ComponentBase {
 void Loop() {
   auto screen = ScreenInteractive::Fullscreen();
   std::vector<Group> groups = {
-      {L"System",
+      {"System",
        {
            panel::PRU(),
            panel::GPIO(),
            panel::EMMC(),
            panel::Led(),
-           panel::PlaceHolder(L"Freeze Packages"),
-           panel::PlaceHolder(L"Sensor Stats and Configurations "),
-           panel::PlaceHolder(L"Password"),
-           panel::PlaceHolder(L"Boot / Auto login "),
-           panel::PlaceHolder(L"Firmware Update"),
-           panel::PlaceHolder(L"Uboot Overlays"),
-           panel::PlaceHolder(L"Overlay FS"),
-           panel::PlaceHolder(L"SSH"),
+           panel::PlaceHolder("Freeze Packages"),
+           panel::PlaceHolder("Sensor Stats and Configurations "),
+           panel::PlaceHolder("Password"),
+           panel::PlaceHolder("Boot / Auto login "),
+           panel::PlaceHolder("Firmware Update"),
+           panel::PlaceHolder("Uboot Overlays"),
+           panel::PlaceHolder("Overlay FS"),
+           panel::PlaceHolder("SSH"),
        }},
-      {L"Network",
+      {"Network",
        {
            panel::WiFi(&screen),
            panel::ICS(),
        }},
-      {L"Display",
+      {"Display",
        {
-           panel::PlaceHolder(L"Display Resolution"),
+           panel::PlaceHolder("Display Resolution"),
        }},
-      {L"Info",
+      {"Info",
        {
-           panel::PlaceHolder(L"Update"),
-           panel::PlaceHolder(L"About"),
+           panel::PlaceHolder("Update"),
+           panel::PlaceHolder("About"),
        }},
   };
 

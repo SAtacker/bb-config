@@ -51,12 +51,12 @@ class WiFiImpl : public PanelBase {
       wifiCompatiblity = false;
     }
     if (wifiCompatiblity) {
-      wifi_toggle_ = Button(L"Toggle WiFi", [&] { ToggleWifi(); });
+      wifi_toggle_ = Button("Toggle WiFi", [&] { ToggleWifi(); });
       scan_button = Button(&scan_label_, [&] { Scan(); });
-      connect_button = Button(L"Connect", [&] { Connect(); });
-      disconnect_button = Button(L"Disconnect", [&] { Disconnect(); });
-      back_button = Button(L"Back", [&] { activity = ActivityMain; });
-      pass_input = Input(&password, L"password");
+      connect_button = Button("Connect", [&] { Connect(); });
+      disconnect_button = Button("Disconnect", [&] { Disconnect(); });
+      back_button = Button("Back", [&] { activity = ActivityMain; });
+      pass_input = Input(&password, "password");
       option.on_enter = [&] { activity = ActivityConnect; };
       menu_scan = Menu(&wifi_list_, &selected, &option);
 
@@ -90,7 +90,7 @@ class WiFiImpl : public PanelBase {
         wifi_scan_.join();
       }
   }
-  std::wstring Title() override { return L"WiFi"; }
+  std::string Title() override { return "WiFi"; }
 
   Element Render() override {
     if (wifiCompatiblity) {
@@ -103,18 +103,18 @@ class WiFiImpl : public PanelBase {
       if (activity == ActivityConnect)
         return RenderConnect();
 
-      return text(L"Not implemented");
+      return text("Not implemented");
     } else {
-      return text(L"Feature not supported");
+      return text("Feature not supported");
     }
   }
 
   Element RenderMain() {
     scan_label_ =
-        scanning_ ? L"Scan network (Status: scanning...)" : L"Scan network";
+        scanning_ ? "Scan network (Status: scanning...)" : "Scan network";
     auto wifi_status_ =
-        (WifiStatus() ? L"WiFi Status : Enabled" : L"WiFi Status : Disabled");
-    auto current_network = L"Current Network: " + to_wstring(ActiveWifiName());
+        (WifiStatus() ? "WiFi Status : Enabled" : "WiFi Status : Disabled");
+    auto current_network = "Current Network: " + ActiveWifiName();
 
     return vbox({
                text(wifi_status_),
@@ -123,7 +123,7 @@ class WiFiImpl : public PanelBase {
                    wifi_toggle_->Render(),
                    scan_button->Render(),
                }),
-               window(text(L"Network"), menu_scan->Render() | yframe),
+               window(text("Network"), menu_scan->Render() | yframe),
            }) |
            flex;
   }
@@ -131,8 +131,8 @@ class WiFiImpl : public PanelBase {
   Element RenderConnect() {
     return vbox({
                vbox({
-                   hbox({text(L"Network : "), text(wifi_list_[selected])}),
-                   hbox({text(L"Password: "), pass_input->Render()}),
+                   hbox({text("Network : "), text(wifi_list_[selected])}),
+                   hbox({text("Password: "), pass_input->Render()}),
                }),
                hbox({
                    connect_button->Render(),
@@ -158,8 +158,8 @@ class WiFiImpl : public PanelBase {
   }
 
   void Connect() {
-    data.name = to_string(wifi_list_[selected]);
-    data.pass = to_string(password);
+    data.name = wifi_list_[selected];
+    data.pass = password;
     data.type = "wifi";
     std::string file_path;
     RefreshNetworkList();
@@ -182,8 +182,8 @@ class WiFiImpl : public PanelBase {
   }
 
   void Disconnect() {
-    data.name = to_string(wifi_list_[selected]);
-    data.pass = to_string(password);
+    data.name = wifi_list_[selected];
+    data.pass = password;
     data.type = "wifi";
     std::string file_path;
     RefreshNetworkList();
@@ -208,12 +208,12 @@ class WiFiImpl : public PanelBase {
       shell_helper("connmanctl disable wifi");
   }
 
-  void ListWifiNames(Sender<std::vector<std::wstring>> out,
+  void ListWifiNames(Sender<std::vector<std::string>> out,
                      std::function<void(void)> done) {
-    std::vector<std::wstring> list;
+    std::vector<std::string> list;
     RefreshNetworkList();
     for (auto network : service_names)
-      list.push_back(to_wstring(network.first));
+      list.push_back(network.first);
     out->Send(list);
     done();
   }
@@ -398,7 +398,7 @@ class WiFiImpl : public PanelBase {
   };
   int activity = ActivityMain;
   std::string selected_wifi;
-  std::wstring password;
+  std::string password;
   std::vector<std::string> names;
   std::thread wifi_scan_;
   connman_data data;
@@ -410,10 +410,10 @@ class WiFiImpl : public PanelBase {
   Component disconnect_button;
   Component back_button;
   Component wifi_toggle_;
-  std::vector<std::wstring> wifi_list_;
+  std::vector<std::string> wifi_list_;
   bool scanning_ = false;
   bool wifiCompatiblity = true;
-  std::wstring scan_label_;
+  std::string scan_label_;
   Receiver<decltype(wifi_list_)> wifi_list_receiver_ =
       MakeReceiver<decltype(wifi_list_)>();
   ScreenInteractive* screen_;

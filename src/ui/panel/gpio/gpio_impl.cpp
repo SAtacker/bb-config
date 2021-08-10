@@ -8,26 +8,26 @@ using namespace ftxui;
 
 namespace ui {
 
-const std::vector<std::wstring> iOentries = {
-    L"IN",
-    L"OUT",
+const std::vector<std::string> iOentries = {
+    "IN",
+    "OUT",
 };
 
-const std::vector<std::wstring> valueEntries = {
-    L"0",
-    L"1",
+const std::vector<std::string> valueEntries = {
+    "0",
+    "1",
 };
 
-const std::vector<std::wstring> activeEntries = {
-    L"Low",
-    L"High",
+const std::vector<std::string> activeEntries = {
+    "Low",
+    "High",
 };
 
-const std::vector<std::wstring> edgeEntries = {
-    L"Pos (+ve)",
-    L"Neg (-ve)",
-    L"Any",
-    L"None",
+const std::vector<std::string> edgeEntries = {
+    "Pos (+ve)",
+    "Neg (-ve)",
+    "Any",
+    "None",
 };
 
 class Gpio : public ComponentBase {
@@ -135,31 +135,29 @@ class Gpio : public ComponentBase {
         }),
         [&] {
           return vbox({
-              text(to_wstring(label()) + L" Status "),
-              hbox(text(L" * Direction       : "),
-                   text(to_wstring(direction()))),
-              hbox(text(L" * Value           : "), text(to_wstring(value()))),
-              hbox(text(L" * Active Low      : "),
-                   text(to_wstring(active_low()))),
-              hbox(text(L" * Edge            : "), text(to_wstring(edge()))),
-              text(L" Actions "),
-              hbox(text(L" * Direction       : "), ioToggle->Render()),
-              hbox(text(L" * Value           : "), valToggle->Render()),
-              hbox(text(L" * Active Low      : "), activeToggle->Render()),
-              hbox(text(L" * Edge            : "), edgeToggle->Render()),
+              text(label() + " Status "),
+              hbox(text(" * Direction       : "), text(direction())),
+              hbox(text(" * Value           : "), text(value())),
+              hbox(text(" * Active Low      : "), text(active_low())),
+              hbox(text(" * Edge            : "), text(edge())),
+              text(" Actions "),
+              hbox(text(" * Direction       : "), ioToggle->Render()),
+              hbox(text(" * Value           : "), valToggle->Render()),
+              hbox(text(" * Active Low      : "), activeToggle->Render()),
+              hbox(text(" * Edge            : "), edgeToggle->Render()),
           });
         });
     Add(Container::Vertical(
         {actions, Container::Horizontal({
-                      Button(L"Back to Menu", [&] { *tab_ = 0; }),
-                      Button(L"Prev",
+                      Button("Back to Menu", [&] { *tab_ = 0; }),
+                      Button("Prev",
                              [&] {
                                (*next_)--;
                                if (*next_ < 0) {
                                  *next_ = 0;
                                }
                              }),
-                      Button(L"Next",
+                      Button("Next",
                              [&] {
                                (*next_)++;
                                if (*limit_ < *next_) {
@@ -191,7 +189,7 @@ class Gpio : public ComponentBase {
 class GPIOImpl : public PanelBase {
  public:
   GPIOImpl() { BuildUI(); }
-  std::wstring Title() override { return L"GPIO"; }
+  std::string Title() override { return "GPIO"; }
 
  private:
   void BuildUI() {
@@ -224,7 +222,7 @@ class GPIOImpl : public PanelBase {
   Element Render() override {
     gpio_names.clear();
     for (const auto& child : children_) {
-      gpio_names.push_back(to_wstring(child->label()));
+      gpio_names.push_back(child->label());
     }
 
     int i = 0;
@@ -236,11 +234,11 @@ class GPIOImpl : public PanelBase {
         i++;
       }
 
-    return window(text(L"GPIO Menu"), gpio_menu->Render() | frame | flex);
+    return window(text("GPIO Menu"), gpio_menu->Render() | frame | flex);
   }
 
   std::vector<std::shared_ptr<Gpio>> children_;
-  std::vector<std::wstring> gpio_names;
+  std::vector<std::string> gpio_names;
   Component gpio_menu;
   Component gpio_individual;
   int selected = 0;
