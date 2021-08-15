@@ -28,6 +28,8 @@ Panel WiFi(ScreenInteractive*);
 Panel BackgroundWorker(ScreenInteractive*);
 Panel About();
 Panel passwd();
+Panel display();
+Panel ssh();
 }  // namespace panel
 }  // namespace ui
 

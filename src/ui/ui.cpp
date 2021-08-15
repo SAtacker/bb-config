@@ -160,9 +160,8 @@ void Loop() {
       {"System",
        {
            panel::PRU(), panel::GPIO(), panel::EMMC(), panel::Led(),
-           panel::passwd(),
+           panel::passwd(), panel::ssh(),
            // TODO: panel::PlaceHolder("Sensor Stats and Configurations "),
-           // TODO: panel::PlaceHolder("Boot / Auto login "),
            // TODO: panel::PlaceHolder("Firmware Update"),
            // TODO: panel::PlaceHolder("SSH"),
        }},
@@ -173,7 +172,7 @@ void Loop() {
        }},
       {"Display",
        {
-           // TODO: panel::PlaceHolder("Display Resolution"),
+           panel::display(),
        }},
       {"Info",
        {

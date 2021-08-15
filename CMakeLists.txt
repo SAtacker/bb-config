@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 3.11)
 project(beagle-config VERSION 0.1.0)
 
-option(BEAGLE_CONFIG_SANITIZE "Use sanitize debug options" ON)
+option(BEAGLE_CONFIG_SANITIZE "Use sanitize debug options" OFF)
 
 include(FetchContent)
 set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
@@ -29,6 +29,8 @@ add_executable(beagle-config
   src/ui/panel/pru/pru_impl.cpp
   src/ui/panel/wifi/wifi_impl.cpp
   src/ui/panel/passwd/passwd.cpp
+  src/ui/panel/display/display.cpp
+  src/ui/panel/ssh/ssh.cpp
   src/ui/ui.cpp
   src/ui/ui.hpp
   src/utils.hpp
