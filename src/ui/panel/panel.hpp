@@ -27,6 +27,7 @@ Panel Led();
 Panel WiFi(ScreenInteractive*);
 Panel BackgroundWorker(ScreenInteractive*);
 Panel About();
+Panel passwd();
 }  // namespace panel
 }  // namespace ui
 
