@@ -174,8 +174,15 @@ class ICSImpl : public PanelBase {
     // Creating config.conf */
     std::ifstream config_file(BeagleConfigPath());
     if (!config_file) {
-      std::cerr << "load:: Error opening config file" << std::endl;
-      return;
+      config_file.close();
+      config_file.open(BeagleConfigPath(), std::ios::app);
+      if (!config_file) {
+        std::cerr << "load:: Error opening config file" << BeagleConfigPath()
+                  << std::endl;
+        return;
+      }
+      config_file.close();
+      config_file.open(BeagleConfigPath());
     }
 
     /* Load Config */
