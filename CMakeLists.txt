@@ -8,7 +8,7 @@ set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
 
 FetchContent_Declare(ftxui
   GIT_REPOSITORY https://github.com/ArthurSonzogni/FTXUI
-  GIT_TAG 98f49a581c63abe4399a99a207d384e969ca1260
+  GIT_TAG 69b0c9e53e523ac43a303964fc9c5bc0da7d5d61
 )
 
 FetchContent_GetProperties(ftxui)
@@ -28,6 +28,9 @@ add_executable(beagle-config
   src/ui/panel/placeholder/placeholder_impl.cpp
   src/ui/panel/pru/pru_impl.cpp
   src/ui/panel/wifi/wifi_impl.cpp
+  src/ui/panel/passwd/passwd.cpp
+  src/ui/panel/display/display.cpp
+  src/ui/panel/ssh/ssh.cpp
   src/ui/ui.cpp
   src/ui/ui.hpp
   src/utils.hpp

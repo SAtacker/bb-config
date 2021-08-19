@@ -159,18 +159,11 @@ void Loop() {
   std::vector<Group> groups = {
       {"System",
        {
-           panel::PRU(),
-           panel::GPIO(),
-           panel::EMMC(),
-           panel::Led(),
-           panel::PlaceHolder("Freeze Packages"),
-           panel::PlaceHolder("Sensor Stats and Configurations "),
-           panel::PlaceHolder("Password"),
-           panel::PlaceHolder("Boot / Auto login "),
-           panel::PlaceHolder("Firmware Update"),
-           panel::PlaceHolder("Uboot Overlays"),
-           panel::PlaceHolder("Overlay FS"),
-           panel::PlaceHolder("SSH"),
+           panel::PRU(), panel::GPIO(), panel::EMMC(), panel::Led(),
+           panel::passwd(), panel::ssh(),
+           // TODO: panel::PlaceHolder("Sensor Stats and Configurations "),
+           // TODO: panel::PlaceHolder("Firmware Update"),
+           // TODO: panel::PlaceHolder("SSH"),
        }},
       {"Network",
        {
@@ -179,11 +172,11 @@ void Loop() {
        }},
       {"Display",
        {
-           panel::PlaceHolder("Display Resolution"),
+           panel::display(),
        }},
       {"Info",
        {
-           panel::PlaceHolder("Update"),
+           // TODO: panel::PlaceHolder("Update"),
            panel::About(),
        }},
   };
