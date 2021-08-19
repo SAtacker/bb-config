@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.11)
-project(beagle-config VERSION 0.1.0)
+project(beaglecfg VERSION 0.1.0)
 
 option(BEAGLE_CONFIG_SANITIZE "Use sanitize debug options" OFF)
 
@@ -17,7 +17,7 @@ if(NOT ftxui_POPULATED)
   add_subdirectory(${ftxui_SOURCE_DIR} ${ftxui_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
-add_executable(beagle-config 
+add_executable(${PROJECT_NAME} 
   src/main.cpp 
   src/ui/panel/emmc/emmc_impl.cpp
   src/ui/panel/gpio/gpio_impl.cpp
@@ -37,19 +37,19 @@ add_executable(beagle-config
   src/utils.cpp
 )
 
-target_link_libraries(beagle-config
+target_link_libraries(${PROJECT_NAME}
   PRIVATE ftxui::component
   PRIVATE stdc++fs
 )
 
-target_include_directories(beagle-config
+target_include_directories(${PROJECT_NAME}
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/
   PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src/
 )
 
-set_property(TARGET beagle-config PROPERTY CXX_STANDARD 17)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
-target_compile_options(beagle-config
+target_compile_options(${PROJECT_NAME}
   PRIVATE "-Wall"
   PRIVATE "-Wextra"
   PRIVATE "-pedantic"
@@ -60,8 +60,8 @@ target_compile_options(beagle-config
 
 # Useful for debugging and find 
 if (BEAGLE_CONFIG_SANITIZE)
-  target_compile_options(beagle-config PRIVATE -fsanitize=address,leak,undefined)
-  target_link_libraries(beagle-config PRIVATE -fsanitize=address,leak,undefined)
+  target_compile_options(${PROJECT_NAME} PRIVATE -fsanitize=address,leak,undefined)
+  target_link_libraries(${PROJECT_NAME} PRIVATE -fsanitize=address,leak,undefined)
 endif()
 
 set(git_version "unknown")
