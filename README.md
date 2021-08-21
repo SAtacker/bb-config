@@ -36,6 +36,6 @@ cmake ..
 make -j$(nproc)
 ```
 ### Looks like
-[![asciicast](https://asciinema.org/a/429873.svg)](https://asciinema.org/a/429873)
+![gif](assets/beaglecfg.gif)
 
 * Note: For Cross Compiling a script `cross_compile.sh` should work fine on debian based distros.
