@@ -1,7 +1,8 @@
 cmake_minimum_required (VERSION 3.11)
-project(beaglecfg VERSION 0.1.0)
+project(beaglecfg VERSION 0.1)
 
 option(BEAGLE_CONFIG_SANITIZE "Use sanitize debug options" OFF)
+option(ARMHF_DEB "Debian Package for armhf" OFF)
 
 include(FetchContent)
 set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
@@ -86,3 +87,29 @@ configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/src/environment.hpp.in
   ${CMAKE_CURRENT_BINARY_DIR}/src/environment.hpp
 )
+
+if(ARMHF_DEB)
+
+  set(ARCHITECTURE "armhf")
+  set(CPACK_GENERATOR "DEB")
+  set(CPACK_SOURCE_GENERATOR "TGZ")
+  set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Shreyas Atre")
+  set(CPACK_PACKAGE_CONTACT "Shreyas Atre shreyasatre16@gmail.com")
+  set(CPACK_PACKAGE_VERSION "${CMAKE_PROJECT_VERSION}-${git_version}")
+  set(CPACK_DEBIAN_PACKAGE_NAME "${CMAKE_PROJECT_NAME}")
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE ${ARCHITECTURE})
+  set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}-${git_version}-${ARCHITECTURE}")
+  set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Configure your beaglebone device")
+  set(CPACK_DEBIAN_PACKAGE_PRIORITY "standard")
+  set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/SAtacker/beagle-config")
+  set(CPACK_PACKAGING_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
+  set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/README.md")
+  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+  set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+  set(CPACK_RESOURCE_FILE_WELCOME "${CMAKE_SOURCE_DIR}/README.md")
+  set(CPACK_SOURCE_IGNORE_FILES "${CMAKE_SOURCE_DIR}/build/;${CMAKE_SOURCE_DIR}/.git/") 
+  set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_SOURCE_DIR}/script/postinst")
+
+  include(CPack)
+  
+endif(ARMHF_DEB)
