@@ -30,7 +30,6 @@ add_executable(${PROJECT_NAME}
   src/ui/panel/pru/pru_impl.cpp
   src/ui/panel/wifi/wifi_impl.cpp
   src/ui/panel/passwd/passwd.cpp
-  src/ui/panel/display/display.cpp
   src/ui/panel/ssh/ssh.cpp
   src/ui/ui.cpp
   src/ui/ui.hpp

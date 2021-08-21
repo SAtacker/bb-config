@@ -170,10 +170,6 @@ void Loop() {
            panel::WiFi(&screen),
            panel::ICS(),
        }},
-      {"Display",
-       {
-           panel::display(),
-       }},
       {"Info",
        {
            // TODO: panel::PlaceHolder("Update"),
