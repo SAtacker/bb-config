@@ -87,6 +87,8 @@ configure_file(
   ${CMAKE_CURRENT_BINARY_DIR}/src/environment.hpp
 )
 
+install(TARGETS ${PROJECT_NAME} DESTINATION /usr/sbin)
+
 if(ARMHF_DEB)
 
   set(ARCHITECTURE "armhf")
