@@ -1,0 +1,62 @@
+name: armhf build
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  armhf:
+    name: build-armhf
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Install Deps
+      run: sudo apt install gcc-8-arm-linux-gnueabihf g++-8-arm-linux-gnueabihf
+    - name: Build
+      id: armhf-artifact-download
+      run: |
+        cd ${{ github.workspace }}
+        mkdir build
+        cd build
+        cmake ..  -DCMAKE_CXX_COMPILER=$(which arm-linux-gnueabihf-g++-8) \
+                  -DCMAKE_C_COMPILER=$(which arm-linux-gnueabihf-gcc-8) \
+                  -DARMHF_DEB=ON
+        make -j$(nproc)
+        make package
+        armhf__filename__=$(echo $(ls ${{steps.armhf-artifact-download.outputs.download-path}} | grep ..armhf.deb) | tr -d '\n')
+        version__name__=${armhf__filename__#*-}
+        name__=$(echo ${armhf__filename__%-*} | tr -d '\n')
+        trailing_=$(git rev-list --count HEAD | tr -d '\n')
+        version__=$(echo ${version__name__%-*} | tr -d '\n')
+        echo "name__=$name__" >> $GITHUB_ENV
+        echo "version__=$version__" >> $GITHUB_ENV
+        echo "armhf__filename__=$armhf__filename__" >> $GITHUB_ENV
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+          tag_name: ${{ env.version__ }}
+          release_name: ${{ env.name__ }}
+          draft: false
+          prerelease: false
+    - name: Upload Release Asset
+      id: upload-release-asset 
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+       # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, 
+       # which include a `upload_url`. See this blog post for more info: 
+       # https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{ github.workspace }}/build/${{ env.armhf__filename__ }}
+        asset_name: ${{ env.armhf__filename__ }}
+        asset_content_type: application/vnd.debian.binary-package

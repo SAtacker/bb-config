@@ -1,7 +1,8 @@
 cmake_minimum_required (VERSION 3.11)
-project(beagle-config VERSION 0.1.0)
+project(beaglecfg VERSION 0.1)
 
 option(BEAGLE_CONFIG_SANITIZE "Use sanitize debug options" OFF)
+option(ARMHF_DEB "Debian Package for armhf" OFF)
 
 include(FetchContent)
 set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
@@ -17,7 +18,7 @@ if(NOT ftxui_POPULATED)
   add_subdirectory(${ftxui_SOURCE_DIR} ${ftxui_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
-add_executable(beagle-config 
+add_executable(${PROJECT_NAME} 
   src/main.cpp 
   src/ui/panel/emmc/emmc_impl.cpp
   src/ui/panel/gpio/gpio_impl.cpp
@@ -37,19 +38,19 @@ add_executable(beagle-config
   src/utils.cpp
 )
 
-target_link_libraries(beagle-config
+target_link_libraries(${PROJECT_NAME}
   PRIVATE ftxui::component
   PRIVATE stdc++fs
 )
 
-target_include_directories(beagle-config
+target_include_directories(${PROJECT_NAME}
   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/
   PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/src/
 )
 
-set_property(TARGET beagle-config PROPERTY CXX_STANDARD 17)
+set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 17)
 
-target_compile_options(beagle-config
+target_compile_options(${PROJECT_NAME}
   PRIVATE "-Wall"
   PRIVATE "-Wextra"
   PRIVATE "-pedantic"
@@ -60,8 +61,8 @@ target_compile_options(beagle-config
 
 # Useful for debugging and find 
 if (BEAGLE_CONFIG_SANITIZE)
-  target_compile_options(beagle-config PRIVATE -fsanitize=address,leak,undefined)
-  target_link_libraries(beagle-config PRIVATE -fsanitize=address,leak,undefined)
+  target_compile_options(${PROJECT_NAME} PRIVATE -fsanitize=address,leak,undefined)
+  target_link_libraries(${PROJECT_NAME} PRIVATE -fsanitize=address,leak,undefined)
 endif()
 
 set(git_version "unknown")
@@ -86,3 +87,29 @@ configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/src/environment.hpp.in
   ${CMAKE_CURRENT_BINARY_DIR}/src/environment.hpp
 )
+
+if(ARMHF_DEB)
+
+  set(ARCHITECTURE "armhf")
+  set(CPACK_GENERATOR "DEB")
+  set(CPACK_SOURCE_GENERATOR "TGZ")
+  set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Shreyas Atre")
+  set(CPACK_PACKAGE_CONTACT "Shreyas Atre shreyasatre16@gmail.com")
+  set(CPACK_PACKAGE_VERSION "${CMAKE_PROJECT_VERSION}-${git_version}")
+  set(CPACK_DEBIAN_PACKAGE_NAME "${CMAKE_PROJECT_NAME}")
+  set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE ${ARCHITECTURE})
+  set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${CMAKE_PROJECT_VERSION}-${git_version}-${ARCHITECTURE}")
+  set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Configure your beaglebone device")
+  set(CPACK_DEBIAN_PACKAGE_PRIORITY "standard")
+  set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/SAtacker/beagle-config")
+  set(CPACK_PACKAGING_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
+  set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_SOURCE_DIR}/README.md")
+  set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
+  set(CPACK_RESOURCE_FILE_README "${CMAKE_SOURCE_DIR}/README.md")
+  set(CPACK_RESOURCE_FILE_WELCOME "${CMAKE_SOURCE_DIR}/README.md")
+  set(CPACK_SOURCE_IGNORE_FILES "${CMAKE_SOURCE_DIR}/build/;${CMAKE_SOURCE_DIR}/.git/") 
+  set(CPACK_DEBIAN_PACKAGE_CONTROL_EXTRA "${CMAKE_SOURCE_DIR}/script/postinst")
+
+  include(CPack)
+  
+endif(ARMHF_DEB)
