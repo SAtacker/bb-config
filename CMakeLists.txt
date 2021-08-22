@@ -31,7 +31,6 @@ add_executable(${PROJECT_NAME}
   src/ui/panel/pru/pru_impl.cpp
   src/ui/panel/wifi/wifi_impl.cpp
   src/ui/panel/passwd/passwd.cpp
-  src/ui/panel/display/display.cpp
   src/ui/panel/ssh/ssh.cpp
   src/ui/ui.cpp
   src/ui/ui.hpp
@@ -88,6 +87,8 @@ configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/src/environment.hpp.in
   ${CMAKE_CURRENT_BINARY_DIR}/src/environment.hpp
 )
+
+install(TARGETS ${PROJECT_NAME} DESTINATION /usr/sbin)
 
 if(VERSION_FILE)
   execute_process(

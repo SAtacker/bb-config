@@ -173,10 +173,8 @@ class WiFiImpl : public PanelBase {
       }
     }
     if (file_path.empty()) {
-      std::cerr << "Network Not found :- " << data.name << std::endl;
       return;
     }
-    std::cout << "Calling store: " << file_path << std::endl;
     StoreConnmanFile(file_path.c_str());
     activity = ActivityMain;
   }
@@ -196,7 +194,6 @@ class WiFiImpl : public PanelBase {
         break;
       }
     }
-    std::cout << "Calling empty: " << file_path << std::endl;
     EmptyConnmanConfig(file_path.c_str());
     activity = ActivityMain;
   }
@@ -219,11 +216,9 @@ class WiFiImpl : public PanelBase {
   }
 
   int StoreConnmanFile(const char* path) {
-    std::cout << "Storing in " << path << std::endl;
     std::fstream connman_config(
         path, std::fstream::in | std::fstream::out | std::fstream::trunc);
     if (!connman_config.is_open()) {
-      std::cerr << "Error opening connman config " << path << std::endl;
       return -1;
     } else {
       std::time_t time_ = std::chrono::system_clock::to_time_t(
@@ -246,12 +241,9 @@ class WiFiImpl : public PanelBase {
   }
 
   void EmptyConnmanConfig(const char* path) {
-    std::cout << "Emptying " << path << std::endl;
     std::fstream connman_config(
         path, std::fstream::in | std::fstream::out | std::fstream::trunc);
     if (!connman_config.is_open()) {
-      std::cerr << "Emptying: Error opening connman config " << path
-                << std::endl;
     } else {
       std::time_t time_ = std::chrono::system_clock::to_time_t(
           std::chrono::system_clock::now());
@@ -335,7 +327,6 @@ class WiFiImpl : public PanelBase {
                 current_line;
           }
         } else {
-          std::cerr << "Not finding unique_name" << std::endl;
         }
       }
       result.erase(0, newline_pos + 1);
@@ -371,7 +362,6 @@ class WiFiImpl : public PanelBase {
     int skfd = socket(AF_INET, SOCK_DGRAM, 0);
 
     if (skfd < 0) {
-      std::cerr << "cannot open socket" << std::endl;
       return 0;
     }
 

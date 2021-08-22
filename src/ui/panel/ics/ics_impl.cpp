@@ -84,7 +84,6 @@ class ICSImpl : public PanelBase {
     // Create a socket.
     int socket_file_descriptor = socket(AF_INET, SOCK_DGRAM, 0);
     if (socket_file_descriptor < 0) {
-      std::cerr << "Error opening socket " << std::endl;
       return -1;
     }
 
@@ -113,8 +112,6 @@ class ICSImpl : public PanelBase {
     if (!route_add_) {
       int error = ioctl(socket_file_descriptor, SIOCDELRT, &route);
       if (error != 0) {
-        std::cerr << "Error ioctl del rt_gateway: " << gateway_str << "\n"
-                  << strerror(errno) << std::endl;
       }
       shutdown(socket_file_descriptor, SHUT_RDWR);
       return -1;
@@ -123,15 +120,10 @@ class ICSImpl : public PanelBase {
     /* Add it */
     int error = ioctl(socket_file_descriptor, SIOCADDRT, &route);
     if (error != 0) {
-      std::cerr << "Error ioctl add rt_gateway: " << gateway_str << "\n"
-                << strerror(errno) << std::endl;
     }
 
     int nameserver_count = CountNameserver();
     if (nameserver_count >= 2) {
-      std::cerr << "Servers already exist: nameserver_count = "
-                << nameserver_count << std::endl;
-
       shutdown(socket_file_descriptor, SHUT_RDWR);
       return -1;
     }
@@ -140,7 +132,6 @@ class ICSImpl : public PanelBase {
     std::ofstream file("/etc/resolv.conf", std::ofstream::app);
 
     if (!file.good()) {
-      std::cerr << "Permission denied" << std::endl;
       shutdown(socket_file_descriptor, SHUT_RDWR);
       return -1;
     }
@@ -154,8 +145,6 @@ class ICSImpl : public PanelBase {
     file << "nameserver " << dns_1_str << std::endl;
     file << "nameserver " << dns_2_str << std::endl;
 
-    std::cerr << "Successful " << dns_1_str << " " << dns_2_str << std::endl;
-
     /* Close the socket */
     shutdown(socket_file_descriptor, SHUT_RDWR);
     return 0;
@@ -166,7 +155,6 @@ class ICSImpl : public PanelBase {
     // Create the config directory if it doesn't exist yet.
     if (!std::filesystem::is_directory(UserShareConfigPath())) {
       if (!std::filesystem::create_directories(UserShareConfigPath())) {
-        std::cerr << "Error Creating Directory" << std::endl;
         return;
       }
     }
@@ -177,8 +165,6 @@ class ICSImpl : public PanelBase {
       config_file.close();
       config_file.open(BeagleConfigPath(), std::ios::app);
       if (!config_file) {
-        std::cerr << "load:: Error opening config file" << BeagleConfigPath()
-                  << std::endl;
         return;
       }
       config_file.close();
@@ -223,10 +209,8 @@ class ICSImpl : public PanelBase {
   }
 
   void StoreConfig() {
-    std::cerr << "Storing:: " << BeagleConfigPath() << std::endl;
     std::ofstream config_file(BeagleConfigPath());
     if (!config_file) {
-      std::cerr << "Store :: Error opening config file" << std::endl;
       return;
     }
 
