@@ -3,13 +3,14 @@ project(beaglecfg VERSION 0.1)
 
 option(BEAGLE_CONFIG_SANITIZE "Use sanitize debug options" OFF)
 option(ARMHF_DEB "Debian Package for armhf" OFF)
+option(VERSION_FILE "Create a version file" OFF)
 
 include(FetchContent)
 set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
 
 FetchContent_Declare(ftxui
   GIT_REPOSITORY https://github.com/ArthurSonzogni/FTXUI
-  GIT_TAG 69b0c9e53e523ac43a303964fc9c5bc0da7d5d61
+  GIT_TAG b95a7a4c6b8e89f5288a96d8b2c0461ad4a69f77
 )
 
 FetchContent_GetProperties(ftxui)
@@ -88,6 +89,13 @@ configure_file(
 )
 
 install(TARGETS ${PROJECT_NAME} DESTINATION /usr/sbin)
+
+if(VERSION_FILE)
+  execute_process(
+    COMMAND bash -c "echo -n ${CMAKE_PROJECT_VERSION}-${git_version} > VERSION"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+endif()
 
 if(ARMHF_DEB)
 

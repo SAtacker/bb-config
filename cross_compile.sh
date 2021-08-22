@@ -17,5 +17,6 @@ check_and_install "gcc-8-arm-linux-gnueabihf" "g++-8-arm-linux-gnueabihf" "cmake
 mkdir -p build
 cd build
 cmake ..    -DCMAKE_CXX_COMPILER=$(which arm-linux-gnueabihf-g++-8) \
-            -DCMAKE_C_COMPILER=$(which arm-linux-gnueabihf-gcc-8)
+            -DCMAKE_C_COMPILER=$(which arm-linux-gnueabihf-gcc-8) \
+            -DVERSION_FILE=ON
 make -j$(nproc)
