@@ -33,7 +33,7 @@ jobs:
         version__name__=${armhf__filename__#*-}
         name__=$(echo ${armhf__filename__%-*} | tr -d '\n')
         trailing_=$(git rev-list --count HEAD | tr -d '\n')
-        version__=$(echo ${version__name__%-*} | tr -d '\n')
+        version__=$(cat ../VERSION)
         echo "name__=$name__" >> $GITHUB_ENV
         echo "version__=$version__" >> $GITHUB_ENV
         echo "armhf__filename__=$armhf__filename__" >> $GITHUB_ENV

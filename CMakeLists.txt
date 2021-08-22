@@ -3,6 +3,7 @@ project(beaglecfg VERSION 0.1)
 
 option(BEAGLE_CONFIG_SANITIZE "Use sanitize debug options" OFF)
 option(ARMHF_DEB "Debian Package for armhf" OFF)
+option(VERSION_FILE "Create a version file" OFF)
 
 include(FetchContent)
 set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
@@ -87,6 +88,13 @@ configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/src/environment.hpp.in
   ${CMAKE_CURRENT_BINARY_DIR}/src/environment.hpp
 )
+
+if(VERSION_FILE)
+  execute_process(
+    COMMAND bash -c "echo -n ${CMAKE_PROJECT_VERSION}-${git_version} > VERSION"
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  )
+endif()
 
 if(ARMHF_DEB)
 
