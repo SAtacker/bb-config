@@ -1,5 +1,5 @@
 #!/usr/bin/bash
-set -e
+
 
 check_and_install(){
     for var in "$@"
