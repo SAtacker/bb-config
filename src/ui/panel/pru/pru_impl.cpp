@@ -66,6 +66,8 @@ class PRUPanel : public PanelBase {
 
  private:
   void BuildUI() {
+    if (!std::filesystem::exists("/sys/class/remoteproc/"))
+      return;
     Component vertical_list = Container::Vertical({});
     for (const auto& it :
          std::filesystem::directory_iterator("/sys/class/remoteproc/")) {
@@ -91,18 +93,18 @@ class PRUPanel : public PanelBase {
       info_list.push_back(text(child->info()));
     }
 
-    return window(text(" PRUSS  "), hbox({
-                                        vbox(std::move(name_list)),
-                                        separator(),
-                                        vbox(std::move(firmware_list)),
-                                        separator(),
-                                        vbox(std::move(state_list)),
-                                        separator(),
-                                        vbox(std::move(action_list)) | flex,
-                                        separator(),
-                                        vbox(std::move(info_list)) | flex,
-                                    }) | frame |
-                                        flex);
+    return window(text(" PRUS(s)  "), hbox({
+                                          vbox(std::move(name_list)),
+                                          separator(),
+                                          vbox(std::move(firmware_list)),
+                                          separator(),
+                                          vbox(std::move(state_list)),
+                                          separator(),
+                                          vbox(std::move(action_list)) | flex,
+                                          separator(),
+                                          vbox(std::move(info_list)) | flex,
+                                      }) | frame |
+                                          flex);
   }
 
   std::vector<std::shared_ptr<Pru>> children_;
@@ -110,6 +112,7 @@ class PRUPanel : public PanelBase {
 
 namespace panel {
 Panel PRU() {
+
   return Make<PRUPanel>();
 }
 
