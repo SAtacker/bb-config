@@ -1,7 +1,7 @@
 <br />
 <p align="center">
   <a href="https://github.com/SAtacker/beagle-config">
-    <img src="assets/images/beaglecfg.png" alt="Logo" width="481" height="75">
+    <img src="assets/images/beaglecfg.png" alt="Logo" width="481" height="200">
   </a>
   <p align="center">
     Configure your beagle devices easily.
