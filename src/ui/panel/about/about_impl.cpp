@@ -91,19 +91,18 @@ class AboutImpl : public PanelBase {
                    }) | bold,
                    separator(),
                    vbox({
-                       text("beagle-config"),
+                       text("bb-config"),
                        separator(),
-                       text("Beagle-Config is a tool-set, that aims to provide "
+                       text("bb-config is a tool-set, that aims to provide "
                             "the"),
                        text("functionality to make the most common low-level"
                             "configuration "),
                        text("changes in beagle devices easily"),
                        separator(),
-                       text("https://github.com/SAtacker/beagle-config   "),
+                       text("https://github.com/SAtacker/bb-config   "),
                        separator(),
-                       text(
-                           "https://github.com/SAtacker/beagle-config/commit/" +
-                           std::string(git_hash).substr(10) + "   "),
+                       text("https://github.com/SAtacker/bb-config/commit/" +
+                            std::string(git_hash).substr(10) + "   "),
                        separator(),
                        text(git_version),
                    }),

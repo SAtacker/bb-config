@@ -112,7 +112,6 @@ class PRUPanel : public PanelBase {
 
 namespace panel {
 Panel PRU() {
-
   return Make<PRUPanel>();
 }
 

@@ -17,7 +17,7 @@ namespace ui {
 namespace {
 
 std::string UserShareConfigPath() {
-  return xdg_utils::data::home() + "/beagle-config";
+  return xdg_utils::data::home() + "/bb-config";
 }
 
 std::string BeagleConfigPath() {
@@ -139,7 +139,7 @@ class ICSImpl : public PanelBase {
     std::time_t time_ =
         std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
     auto ti = std::ctime(&time_);
-    file << "# Last changed by beagle-config on: " << ti << std::endl;
+    file << "# Last changed by bb-config on: " << ti << std::endl;
 
     /* Stores nameserver strings */
     file << "nameserver " << dns_1_str << std::endl;
