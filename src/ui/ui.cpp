@@ -109,7 +109,7 @@ class MainMenu : public ComponentBase {
       return vbox({
           hbox({
               spinner(5, iteration_),
-              text("  beagle-config"),
+              text("  bb-config"),
               filler(),
               exit_button_->Render() | color(Color::DarkOrange3),
           }),
@@ -128,7 +128,7 @@ class MainMenu : public ComponentBase {
 
   Element Render() override {
     iteration_++;
-    auto title = text(" beagle-config ") | bold | color(Color::Cyan1) | hcenter;
+    auto title = text(" bb-config ") | bold | color(Color::Cyan1) | hcenter;
     return window(title, resizeable_split_->Render()) | bgcolor(Color::Black);
   }
 
