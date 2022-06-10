@@ -1,4 +1,4 @@
-name: armhf build
+name: armhf release
 
 on:
   push:
@@ -29,13 +29,12 @@ jobs:
                   -DCMAKE_C_COMPILER=$(which arm-linux-gnueabihf-gcc-8) \
                   -DARMHF_DEB=ON \
                   -DARCHITECTURE="armhf" \
-                  -DGIT_VERSION=${{ github.ref }}
+                  -DGIT_VERSION=$(echo ${{ github.ref }} | grep -o v'[0-9]\+\.[0-9]\+\.[0-9]\+')
         make -j$(nproc)
         make package
         armhf__filename__=$(echo $(ls ${{steps.armhf-artifact-download.outputs.download-path}} | grep ..armhf.deb) | tr -d '\n')
-        version__name__=${armhf__filename__#*-}
         name__=$(echo ${armhf__filename__%-*} | tr -d '\n')
-        version__=${{ github.ref }}
+        version__=$(echo ${{ github.ref }} | grep -o v'[0-9]\+\.[0-9]\+\.[0-9]\+')
         echo "name__=$name__" >> $GITHUB_ENV
         echo "version__=$version__" >> $GITHUB_ENV
         echo "armhf__filename__=$armhf__filename__" >> $GITHUB_ENV
@@ -45,8 +44,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: ${{ env.version__ }}
+          release_name: Release ${{ env.version__ }}
           draft: false
           prerelease: false
     - name: Upload Release Asset
