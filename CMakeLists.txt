@@ -90,16 +90,16 @@ configure_file(
 
 install(TARGETS ${PROJECT_NAME} DESTINATION /usr/sbin)
 
-if(VERSION_FILE)
-  execute_process(
-    COMMAND bash -c "echo -n ${CMAKE_PROJECT_VERSION}-${git_version} > VERSION"
-    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  )
+if(GIT_VERSION)
+  set(git_version ${GIT_VERSION})
 endif()
 
 if(ARMHF_DEB)
 
-  set(ARCHITECTURE "armhf")
+  if(ARCHITECTURE)
+  else()
+    EXECUTE_PROCESS( COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE)
+  endif()
   set(CPACK_GENERATOR "DEB")
   set(CPACK_SOURCE_GENERATOR "TGZ")
   set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Shreyas Atre")
