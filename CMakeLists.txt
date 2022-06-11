@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.11)
-project(bb-config VERSION 0.1)
+project(bb-config)
 
 option(BEAGLE_CONFIG_SANITIZE "Use sanitize debug options" OFF)
 option(ARMHF_DEB "Debian Package for armhf" OFF)
