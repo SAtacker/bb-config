@@ -114,18 +114,18 @@ class Gpio : public ComponentBase {
   }
 
   void BuildUI() {
-    ToggleOption iOtoggleOpt;
-    ToggleOption valueToggleOpt;
-    ToggleOption activeToggleOpt;
-    ToggleOption edgeToggleOpt;
+    auto iOtoggleOpt = MenuOption::Toggle();
+    auto valueToggleOpt = MenuOption::Toggle();
+    auto activeToggleOpt = MenuOption::Toggle();
+    auto edgeToggleOpt = MenuOption::Toggle();
     iOtoggleOpt.on_enter = [&] { handleDirection(); };
     valueToggleOpt.on_enter = [&] { handleValue(); };
     activeToggleOpt.on_enter = [&] { handleActiveLow(); };
     edgeToggleOpt.on_enter = [&] { handleEdge(); };
-    ioToggle = Toggle(&iOentries, &ioTog, iOtoggleOpt);
-    valToggle = Toggle(&valueEntries, &valTog, valueToggleOpt);
-    activeToggle = Toggle(&activeEntries, &activeTog, activeToggleOpt);
-    edgeToggle = Toggle(&edgeEntries, &edgeTog, edgeToggleOpt);
+    ioToggle = Menu(&iOentries, &ioTog, iOtoggleOpt);
+    valToggle = Menu(&valueEntries, &valTog, valueToggleOpt);
+    activeToggle = Menu(&activeEntries, &activeTog, activeToggleOpt);
+    edgeToggle = Menu(&edgeEntries, &edgeTog, edgeToggleOpt);
     Component actions = Renderer(
         Container::Vertical({
             ioToggle,
@@ -234,7 +234,8 @@ class GPIOImpl : public PanelBase {
         i++;
       }
 
-    return window(text("GPIO Menu"), gpio_menu->Render() | frame | flex);
+    return window(text("GPIO Menu"),
+                  gpio_menu->Render() | vscroll_indicator | frame | flex);
   }
 
   std::vector<std::shared_ptr<Gpio>> children_;

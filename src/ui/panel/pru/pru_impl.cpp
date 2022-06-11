@@ -42,8 +42,7 @@ class Pru : public ComponentBase {
   };
 
   void BuildUI() {
-    ButtonOption opt;
-    opt.border = false;
+    auto opt = ButtonOption::Animated();
     Add(Container::Horizontal({
         Button(
             "[Start]", [&] { StoreState("start"); }, opt),
@@ -103,7 +102,7 @@ class PRUPanel : public PanelBase {
                                           vbox(std::move(action_list)) | flex,
                                           separator(),
                                           vbox(std::move(info_list)) | flex,
-                                      }) | frame |
+                                      }) | vscroll_indicator | frame |
                                           flex);
   }
 

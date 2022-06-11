@@ -123,7 +123,8 @@ class WiFiImpl : public PanelBase {
                    wifi_toggle_->Render(),
                    scan_button->Render(),
                }),
-               window(text("Network"), menu_scan->Render() | yframe),
+               window(text("Network"),
+                      menu_scan->Render() | vscroll_indicator | yframe),
            }) |
            flex;
   }

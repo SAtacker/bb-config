@@ -108,7 +108,7 @@ class EMMCImpl : public PanelBase {
                      separator(),
                      vbox(std::move(gauge_list)) | xflex,
                  }) |
-                 yframe | border;
+                 vscroll_indicator | yframe | border;
 
     return vbox({
                table,

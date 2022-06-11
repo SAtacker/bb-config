@@ -45,7 +45,6 @@ R"(                   |___/                                    |___/)",
 class AboutImpl : public PanelBase {
  public:
   AboutImpl() {
-    opt.border = false;
     button_text = "View Logo";
     viewLogo = Button(
         &button_text,
@@ -57,7 +56,7 @@ class AboutImpl : public PanelBase {
             button_text = "View Logo";
           }
         },
-        opt);
+        ButtonOption::Animated());
     Add(viewLogo);
   }
   ~AboutImpl(){};
@@ -130,7 +129,6 @@ class AboutImpl : public PanelBase {
   std::string title_;
   bool view_logo = false;
   std::string button_text;
-  ButtonOption opt;
   Component viewLogo;
 };
 

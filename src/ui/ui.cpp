@@ -71,13 +71,21 @@ class MainMenu : public ComponentBase {
     menu_.resize(menu_group.size());
     tab_.resize(menu_group.size());
 
-    MenuOption menu_option;
-    menu_option.style_selected =
-        bold | color(Color::Chartreuse1) | bgcolor(Color::Black);
-    menu_option.style_focused =
-        color(Color::Black) | bgcolor(Color::Chartreuse1);
-    menu_option.style_selected_focused =
-        bold | color(Color::Black) | bgcolor(Color::Chartreuse1);
+    auto menu_option = MenuOption::Vertical();
+    menu_option.entries.transform = [](const EntryState& state) {
+      std::string label = (state.active ? "> " : "  ") + state.label;
+      Element e = text(label);
+      if (state.focused) {
+        e |= inverted;
+      }
+
+      if (state.active) {
+        e |= bgcolor(Color::Black);
+        e |= color(Color::Chartreuse1);
+        e |= bold;
+      }
+      return e;
+    };
 
     for (size_t i = 0; i < menu_group.size(); ++i) {
       menu_[i] = Menu(&menu_entries_[i], &index_[i], menu_option);
@@ -95,8 +103,14 @@ class MainMenu : public ComponentBase {
     group_menu_ = Container::Vertical(menu_, &group_index_);
     group_tab_ = Container::Tab(tab_, &group_index_);
 
-    ButtonOption exitButtonOption;
-    exitButtonOption.border = false;
+    auto exitButtonOption = ButtonOption::Animated();
+    exitButtonOption.transform = [](const EntryState& s) {
+      auto element = text(s.label);
+      if (s.focused) {
+        element |= bold;
+      }
+      return element;
+    };
     exit_button_ =
         Button("[Exit]", screen->ExitLoopClosure(), exitButtonOption);
 

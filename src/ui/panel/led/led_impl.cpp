@@ -90,8 +90,8 @@ class Led : public ComponentBase {
         hbox(text("Brightness:") | bold, text(std::to_string(brightness_))),
         hbox(text("Trigger   :") | bold, text(trigger_)),
         separator(),
-        hbox(separator(),
-             trigger_list_->Render() | yframe | size(HEIGHT, EQUAL, 10)),
+        hbox(separator(), trigger_list_->Render() | vscroll_indicator | yframe |
+                              size(HEIGHT, EQUAL, 10)),
         separator(),
         button_toggle_->Render(),
         hbox({
@@ -160,7 +160,7 @@ class LedPanel : public PanelBase {
                separator(),
                led_tab_->Render(),
            }) |
-           frame;
+           vscroll_indicator | frame;
   }
 
   std::string Title() override { return "LEDs"; }
