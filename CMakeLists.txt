@@ -23,6 +23,7 @@ add_executable(${PROJECT_NAME}
   src/main.cpp 
   src/ui/panel/emmc/emmc_impl.cpp
   src/ui/panel/gpio/gpio_impl.cpp
+  src/ui/panel/adc/adc_impl.cpp
   src/ui/panel/ics/ics_impl.cpp
   src/ui/panel/led/led_impl.cpp
   src/ui/panel/about/about_impl.cpp

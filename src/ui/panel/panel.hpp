@@ -24,6 +24,7 @@ Panel GPIO();
 Panel ICS();
 Panel EMMC();
 Panel Led();
+Panel Adc();
 Panel WiFi(ScreenInteractive*);
 Panel BackgroundWorker(ScreenInteractive*);
 Panel About();
