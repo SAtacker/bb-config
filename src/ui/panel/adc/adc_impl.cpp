@@ -1,70 +1,68 @@
+#include <fstream>
+#include <sstream>
 #include "ftxui/component/component.hpp"
+#include "ftxui/dom/elements.hpp"
+#include "process.hpp"
 #include "ui/panel/panel.hpp"
-#include "utils.hpp"
-#include <cmath>   
+
+#define ADC_PATH "/sys/bus/iio/devices/iio\\:device0/"
 
 using namespace ftxui;
 
 namespace ui {
 
-namespace {
+std::vector<std::string> FindADCs() {
+  std::vector<std::string> names;
 
-class Graph {
- public:
-  std::vector<int> operator()(int width, int height) const {
-    std::vector<int> output(width);
-    for (int i = 0; i < width; ++i) {
-      float v = 0;
-      v += 0.1f * sin((i + shift) * 0.1f);        // NOLINT
-      v += 0.2f * sin((i + shift + 10) * 0.15f);  // NOLINT
-      v += 0.1f * sin((i + shift) * 0.03f);       // NOLINT
-      v *= height;                                // NOLINT
-      v += 0.5f * height;                         // NOLINT
-      output[i] = static_cast<int>(v);
-    }
-    return output;
-  }
-  int shift = 0;
-};
- 
-std::vector<int> triangle(int width, int height) {
-  std::vector<int> output(width);
-  for (int i = 0; i < width; ++i) {
-    output[i] = i % (height - 4) + 2;
-  }
-  return output;
+  procxx::process ls{"ls"};
+  ls.add_argument("-C1");
+  ls.add_argument("/sys/bus/iio/devices/iio:device0/");
+  ls.exec();
+
+  std::string name;
+  while (std::getline(ls.output(), name))
+    names.push_back(name);
+  return names;
 }
 
-Graph my_graph;
-
 class adcImpl : public PanelBase {
- public:
-  adcImpl() {
-  }
-  ~adcImpl() = default;
-  std::string Title() override { return "ADC"; }
+  public:
+    adcImpl() {
+      for (auto name : FindADCs()) {
+        pin_.push_back(name);
+      }
+      Add(Container::Vertical({
+        analog_radiobox_,
+        sample_frequency_,
+        button_generate_,
+      }));
+    }
+    ~adcImpl() = default;
 
-  Element Render() override {
-    my_graph.shift++;
-    return hbox({
-        vbox({
-            graph(std::ref(my_graph)),
-            separator(),
-            graph(triangle) | inverted,
-        }) | flex,
-        separator(),
-        vbox({
-            graph(std::ref(my_graph)) | color(Color::BlueLight),
-            separator(),
-            graph(std::ref(my_graph)) | color(Color::RedLight),
-            separator(),
-            graph(std::ref(my_graph)) | color(Color::YellowLight),
-        }) | flex,
-    });
-  }
+  private:
+    Element Render() override {
+      return vbox({
+                text("Select an Analogue Pin:"),
+                hbox(text(" "), analog_radiobox_->Render()),
+                separator(),
+                hbox(text(" "), sample_frequency_->Render()),
+                separator(),
+                button_generate_->Render(),
+              })|
+              vscroll_indicator | frame;
+    }
+
+    std::string Title() override { return "ADC"; }
+
+    int selected_analog_pin = 0;
+    int selected_frequency = 0;
+    std::vector<std::string> pin_;
+    std::vector<std::string> fre_ {"1kHz", "2kHz"};
+
+    Component analog_radiobox_ = Radiobox(&pin_, &selected_analog_pin);
+    Component sample_frequency_ = Dropdown(&fre_, &selected_frequency);
+    Component button_generate_ = Button("Generate", [this] {});
 };
-
-}  // namespace
 
 namespace panel {
 Panel Adc() {
