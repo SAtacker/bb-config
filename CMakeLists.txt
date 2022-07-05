@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.11)
-project(bb-config VERSION 0.1)
+project(bb-config)
 
 option(BEAGLE_CONFIG_SANITIZE "Use sanitize debug options" OFF)
 option(ARMHF_DEB "Debian Package for armhf" OFF)
@@ -10,7 +10,7 @@ set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
 
 FetchContent_Declare(ftxui
   GIT_REPOSITORY https://github.com/ArthurSonzogni/FTXUI
-  GIT_TAG bb3231695f00f3f73889b7ef10a78239c1af90e7
+  GIT_TAG v3.0.0
 )
 
 FetchContent_GetProperties(ftxui)
@@ -23,10 +23,11 @@ add_executable(${PROJECT_NAME}
   src/main.cpp 
   src/ui/panel/emmc/emmc_impl.cpp
   src/ui/panel/gpio/gpio_impl.cpp
-  src/ui/panel/adc/adc_impl.cpp
   src/ui/panel/ics/ics_impl.cpp
   src/ui/panel/led/led_impl.cpp
   src/ui/panel/about/about_impl.cpp
+  src/ui/panel/adc/adc_impl.cpp
+  src/ui/panel/capes/capes_impl.cpp
   src/ui/panel/panel.hpp
   src/ui/panel/placeholder/placeholder_impl.cpp
   src/ui/panel/pru/pru_impl.cpp

@@ -174,7 +174,7 @@ void Loop() {
       {"System",
        {
            panel::PRU(), panel::GPIO(), panel::EMMC(), panel::Led(),
-           panel::passwd(), panel::ssh(), panel::Adc(),
+           panel::passwd(), panel::ssh(), panel::Adc(), panel::Capes(),
            // TODO: panel::PlaceHolder("Sensor Stats and Configurations "),
            // TODO: panel::PlaceHolder("Firmware Update"),
            // TODO: panel::PlaceHolder("SSH"),

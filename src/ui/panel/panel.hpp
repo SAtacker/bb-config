@@ -28,6 +28,7 @@ Panel Adc();
 Panel WiFi(ScreenInteractive*);
 Panel BackgroundWorker(ScreenInteractive*);
 Panel About();
+Panel Capes();
 Panel passwd();
 Panel ssh();
 }  // namespace panel
