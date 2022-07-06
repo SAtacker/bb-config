@@ -1,2 +1,0 @@
-const char* git_version = "@git_version@";
-const char* git_hash = "@git_hash@";
