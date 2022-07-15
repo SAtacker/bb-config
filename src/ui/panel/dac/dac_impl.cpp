@@ -102,7 +102,7 @@ class DACImpl : public PanelBase {
           long long period = value_period * divider[select_unit];
           std::ofstream(path_name + "/period") << period;
 
-          float duty_cycle_f = value_dutyCycle / 100 * period;
+          float duty_cycle_f = (float) value_dutyCycle / 100 * (float) period;
           int duty_cycle = (int) duty_cycle_f;
           std::ofstream(path_name + "/duty_cycle") << duty_cycle;
 
