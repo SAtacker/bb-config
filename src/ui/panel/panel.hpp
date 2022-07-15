@@ -25,6 +25,7 @@ Panel ICS();
 Panel EMMC();
 Panel Led();
 Panel Adc();
+Panel DAC();
 Panel WiFi(ScreenInteractive*);
 Panel BackgroundWorker(ScreenInteractive*);
 Panel About();
