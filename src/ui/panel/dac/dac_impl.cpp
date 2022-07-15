@@ -81,7 +81,7 @@ class DACImpl : public PanelBase {
     
     private:
         std::vector<std::string> v_DAC_pin_;
-        std::vector<std::string> v_polarity_ = {"normal", "inverse"};
+        std::vector<std::string> v_polarity_ = {"normal", "inversed"};
         std::vector<std::string> unit_entries = {"s", "ms", "us", "ns"};
         int selected = 0, 
                 selected_polarity = 0,
@@ -102,7 +102,7 @@ class DACImpl : public PanelBase {
           long long period = value_period * divider[select_unit];
           std::ofstream(path_name + "/period") << period;
 
-          long long duty_cycle = value_dutyCycle / 100 * period;
+          int duty_cycle = value_dutyCycle / 100 * period;
           std::ofstream(path_name + "/duty_cycle") << duty_cycle;
 
           std::ofstream(path_name + "/polarity") << v_polarity_[selected_polarity];
