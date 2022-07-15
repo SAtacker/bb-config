@@ -17,12 +17,12 @@ std::vector<std::string> FindPWMs() {
   procxx::process ls{"ls"};
   ls.add_argument("-C1");
   ls.add_argument(PWM_FILE_PATH);
-  ls.add_argument("| grep pwm-");
   ls.exec();
 
   std::string name;
   while (std::getline(ls.output(), name))
-    names.push_back(name);
+    if (name[3] = '-')
+        names.push_back(name);
   return names;
 }
 
