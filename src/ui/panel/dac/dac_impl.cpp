@@ -1,6 +1,7 @@
 #include <vector>
 #include <string>
 #include <filesystem>
+#include <fstream>
 
 #include "process.hpp"
 #include "ftxui/component/component.hpp"
@@ -21,7 +22,7 @@ std::vector<std::string> FindPWMs() {
 
   std::string name;
   while (std::getline(ls.output(), name))
-    if (name[3] = '-')
+    if (name[3] == '-')
         names.push_back(name);
   return names;
 }
@@ -33,21 +34,43 @@ class DACImpl : public PanelBase {
             for (auto name : FindPWMs()) {
                 v_DAC_pin_.push_back(name);
             }
-            // for (const auto& it : std::filesystem::directory_iterator(PWM_FILE_PATH)) {
-            //     std::string pwm_path = it.path();
-            //     if (pwm_path.find("pwm-0"))
-            //         v_DAC_pin_.push_back(pwm_path);
-            // }
             
             Component page = Renderer(Container::Vertical({
-                                  Container::Horizontal({
-                                      pwm_radiobox,
+                                  pwm_radiobox,
+                                  Container::Vertical({
+                                    slider_period,
+                                    dropdown_unit
                                   }),
+                                  slider_dutyCycle,
+                                  polarity_radiobox,
+                                  button,
                               }),
                               [&] {
                                 return vbox({
-                                    pwm_radiobox->Render() | flex,
-                                });
+                                    text("Select a LED:") | bold,
+                                    pwm_radiobox->Render(),
+                                    separator(),
+                                    hbox(
+                                        slider_period->Render() | vcenter | size(HEIGHT, EQUAL, 3) | xflex,
+                                        dropdown_unit->Render() | size(WIDTH, EQUAL, 15) | size(HEIGHT, LESS_THAN, 8) | vscroll_indicator
+                                    ),
+                                    separator(),
+                                    slider_dutyCycle->Render(),
+                                    separator(),
+                                    hbox(
+                                      text("Period: ")| bold, 
+                                      text(std::to_string(value_period)),
+                                      text(unit_entries[select_unit]),
+                                      text(" Duty Cycle: ")| bold, 
+                                      text(std::to_string(value_dutyCycle)), 
+                                      text("%")
+                                    ),
+                                    separator(),
+                                    text("Select a Polarity:") | bold,
+                                    polarity_radiobox->Render(),
+                                    separator(),
+                                    button->Render(),
+                                }) | vscroll_indicator | frame;
                               });
             Add(page);
         }
@@ -58,9 +81,32 @@ class DACImpl : public PanelBase {
     
     private:
         std::vector<std::string> v_DAC_pin_;
-        int selected = 0;
+        std::vector<std::string> v_polarity_ = {"normal", "inverse"};
+        std::vector<std::string> unit_entries = {"s", "ms", "us", "ns"};
+        int selected = 0, 
+                selected_polarity = 0,
+                value_period = 0, 
+                select_unit = 0,
+                value_dutyCycle = 0;
         Component pwm_radiobox = Radiobox(&v_DAC_pin_, &selected);
+        Component slider_period = Slider("Period", &value_period, 0, 100, 1);
+        Component slider_dutyCycle = Slider("Duty Cycle(%)", &value_dutyCycle, 0, 100, 1);
+        Component dropdown_unit = Dropdown(&unit_entries, &select_unit);
+        Component polarity_radiobox = Radiobox(&v_polarity_, &selected_polarity);
+        Component button = Button("Trigger", [this] { TriggerPWM(); } );
 
+        void TriggerPWM() {
+          std::vector<double> divider = {1, 1/1000, 1/1000000, 1/1000000000};
+          std::string path_name = PWM_FILE_PATH + v_DAC_pin_[selected];
+
+          long int period = value_period * 1000000000 * divider[select_unit];
+          std::ofstream(path_name + "/period") << slider_period;
+
+          long int duty_cycle = value_dutyCycle / 100 * period;
+          std::ofstream(path_name + "/duty_cycle") << duty_cycle;
+
+          std::ofstream(path_name + "/polarity") << v_polarity_[selected_polarity];
+        }
 };
 
 namespace panel {
