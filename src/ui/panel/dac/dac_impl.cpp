@@ -31,7 +31,7 @@ class DACImpl : public PanelBase {
     public:
         DACImpl() {
             for (auto name : FindPWMs()) {
-                pwm_path.push_back(name);
+                v_DAC_pin_.push_back(name);
             }
             // for (const auto& it : std::filesystem::directory_iterator(PWM_FILE_PATH)) {
             //     std::string pwm_path = it.path();
