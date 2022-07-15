@@ -96,16 +96,17 @@ class DACImpl : public PanelBase {
         Component button = Button("Trigger", [this] { TriggerPWM(); } );
 
         void TriggerPWM() {
-          std::vector<double> divider = {1, 1/1000, 1/1000000, 1/1000000000};
+          std::vector<long long> divider = {1000000000, 1000000, 1000, 1};
           std::string path_name = PWM_FILE_PATH + v_DAC_pin_[selected];
 
-          long int period = value_period * 1000000000 * divider[select_unit];
+          long long period = value_period * divider[select_unit];
           std::ofstream(path_name + "/period") << slider_period;
 
-          long int duty_cycle = value_dutyCycle / 100 * period;
+          long long duty_cycle = value_dutyCycle / 100 * period;
           std::ofstream(path_name + "/duty_cycle") << duty_cycle;
 
           std::ofstream(path_name + "/polarity") << v_polarity_[selected_polarity];
+          std::ofstream(path_name + "/enable") << "1";
         }
 };
 
