@@ -100,7 +100,7 @@ class DACImpl : public PanelBase {
           std::string path_name = PWM_FILE_PATH + v_DAC_pin_[selected];
 
           long long period = value_period * divider[select_unit];
-          std::ofstream(path_name + "/period") << slider_period;
+          std::ofstream(path_name + "/period") << period;
 
           long long duty_cycle = value_dutyCycle / 100 * period;
           std::ofstream(path_name + "/duty_cycle") << duty_cycle;
