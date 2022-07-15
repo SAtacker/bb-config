@@ -6,7 +6,7 @@
 #include "ftxui/dom/elements.hpp"
 #include "ui/panel/panel.hpp"
 
-const std::string PWM_FILE_PATH;
+const std::string PWM_FILE_PATH = "/sys/class/pwm";
 
 using namespace ftxui;
 
