@@ -102,7 +102,8 @@ class DACImpl : public PanelBase {
           long long period = value_period * divider[select_unit];
           std::ofstream(path_name + "/period") << period;
 
-          int duty_cycle = value_dutyCycle / 100 * period;
+          float duty_cycle_f = value_dutyCycle / 100 * period;
+          int duty_cycle = (int) duty_cycle_f;
           std::ofstream(path_name + "/duty_cycle") << duty_cycle;
 
           std::ofstream(path_name + "/polarity") << v_polarity_[selected_polarity];
