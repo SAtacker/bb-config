@@ -2,6 +2,7 @@
 #include <string>
 #include <filesystem>
 
+#include "process.hpp"
 #include "ftxui/component/component.hpp"
 #include "ftxui/dom/elements.hpp"
 #include "ui/panel/panel.hpp"
