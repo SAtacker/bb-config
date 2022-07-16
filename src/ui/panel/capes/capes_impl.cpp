@@ -38,7 +38,7 @@ class CapesImpl : public PanelBase {
                         &vect_overlay_.at(i).option->at(j).status
                     ));
                 }
-                Component c_over = Renderer(Container::Vertical({
+                container_option = Renderer(Container::Vertical({
                                     container_option
                               }),
                               [&] {
@@ -48,7 +48,7 @@ class CapesImpl : public PanelBase {
                                     separator(),
                                 });
                               });
-                container_overlays->Add(c_over);
+                container_overlays->Add(container_option);
             }
 
             Add(Container::Vertical({
