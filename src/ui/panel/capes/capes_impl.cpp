@@ -8,29 +8,41 @@
 #include <fstream>
 
 #define FILE_PATH "/boot/uEnv.txt"
-#define CAPES_REGEX "(###Disable auto loading of virtual capes)(.*)"
+#define BACKUP "/boot/uEnv_bkp.txt"
 
 using namespace ftxui;
 
 namespace ui {
 
-struct struct_virtual_capes{
+struct Overlay_Option {
     std::string name;
     int file_seekf;
     bool status;
 };
 
+struct Overlays {
+    std::string name;
+    std::vector<Overlay_Option> *option;
+};
+
+
 class CapesImpl : public PanelBase {
     public:
         CapesImpl() {
-            get_caps_status();
-
-            for (std::vector<int>::size_type i = 0; i < _virt_capes.size(); ++i) {
-                container->Add(Checkbox(_virt_capes[i].name, &_virt_capes[i].status));
+            write_cape_status();
+            
+            for (std::vector<int>::size_type i = 0; i < vect_overlay_.size(); ++i) {
+                for (std::vector<int>::size_type j = 0; i < vect_overlay_.at(i).option->size(); ++j) {
+                    container_option->Add(Checkbox(
+                        vect_overlay_.at(i).option->at(j).name, 
+                        &vect_overlay_.at(i).option->at(j).status
+                    ));
+                }
+                container_overlays->Add(container_option);
             }
 
             Add(Container::Vertical({
-                                container,
+                                container_overlays,
                                 _button_update,
                             }));
         }
@@ -40,92 +52,115 @@ class CapesImpl : public PanelBase {
         std::string Title() override { return "Capes"; }
 
     private:
-        std::vector<struct struct_virtual_capes> _virt_capes;
-        Component container = Container::Vertical({});
+        std::vector<Overlays> vect_overlay_;
+        Component container_option = Container::Vertical({});
+        Component container_overlays = Container::Vertical({});
         Component _button_update = Button("Save", [this] { write_cape_status(); });
 
-        void get_caps_status() {
-            _virt_capes.clear();
+        void get_overlay_status() {
+            vect_overlay_.clear();
 
-            std::ifstream env_file;
-            env_file.open(FILE_PATH);
+            std::ifstream inFile;
+            inFile.open(FILE_PATH);
 
-            if (!env_file)
+            if (!inFile)
                 std::cout << "Error Openning the File\n";
 
             std::string file_line;
+            bool s_flags = false; //Flag for Starting and Ending
+            bool overlay_flags = false; //Flag for Sub-Overlay
+            Overlays *ptr_overlay;
+            Overlay_Option *ptr_option;
 
-            while(getline(env_file, file_line)) {
-                if (std::regex_match (file_line, std::regex(CAPES_REGEX) )) {
-                    struct struct_virtual_capes vc;
-                    vc.file_seekf = env_file.tellg();
-                    bool flags = false;
+            while(getline(inFile, file_line)) {
+                if (!file_line.compare("###U-Boot Overlays###") && !s_flags)
+                {
+                    s_flags = true;
+                }
+                else if (!file_line.compare("###U-Boot Overlays###") && s_flags)
+                {
+                    vect_overlay_.push_back(*ptr_overlay);
+                    break;
+                }
 
-                    while(getline(env_file, file_line)) {
-                        std::stringstream str_stm(file_line);
-                        std::string tmp;
+                if (file_line.compare("###") == 0) {
+                    vect_overlay_.push_back(*ptr_overlay);
+                    overlay_flags = false;
+                }
 
-                        if ((std::regex_match (file_line, std::regex("(###)(.*)") )))
-                            break;
-
-                        while( getline(str_stm, tmp, '_' )) {
-                            ;
-                        }
-
-                        std::stringstream str_stm2(tmp);
-                        getline(str_stm2, tmp, '=');
-
-                        vc.name = tmp;
-
-                        if (file_line[0] == '#')
-                            vc.status = true;
-                        else
-                            vc.status = false;
-                        
-                        _virt_capes.push_back(vc);
-
-                        if (!flags) {
-                            flags = true;
-                            vc.file_seekf = env_file.tellg();
-                        }
-                        else 
-                            vc.file_seekf = env_file.tellg();
-
+                if (overlay_flags) {
+                    if (std::regex_match(file_line, std::regex("(###[a-z])(.*)"))) {
+                        continue;
                     }
+                    std::string temp = file_line;
+                    temp.erase(remove(temp.begin(), temp.end(), '#'), temp.end());
+                    
+                    ptr_option->name = temp;
+                    if (file_line[0] == '#') {
+                        ptr_option->status = true;
+                    }
+                    ptr_overlay->option->push_back(*ptr_option);
+                    ptr_option->file_seekf = inFile.tellg();
+                }
+
+                if (std::regex_match(file_line, std::regex("(###[A-Z])(.*)"))) {
+                    if (std::regex_match(file_line, std::regex("(###Documentation)(.*)")))
+                        continue;
+                    else if (std::regex_match(file_line, std::regex("(###U-Boot Overlays###)")))
+                        continue;
+                    
+                    std::string temp = file_line;
+                    temp.erase(remove(temp.begin(), temp.end(), '#'), temp.end());
+
+                    overlay_flags = true;
+                    ptr_overlay = new Overlays;
+                    ptr_overlay->option = new std::vector<Overlay_Option>;
+                    ptr_option = new Overlay_Option;
+                    ptr_overlay->name = temp;
+                    ptr_option->file_seekf = inFile.tellg();
                 }
             }
 
-            env_file.close();
+            inFile.close();
         }
 
         void write_cape_status() {
-            std::fstream myfile;
-            std::string write_off;
-            std::string write_on;
+            std::ofstream outfile;
+            std::ifstream infile;
+            std::string in_line;
 
-            myfile.open(FILE_PATH, std::ios::in | std::ios::out);
+            infile.open(FILE_PATH);
+            outfile.open(BACKUP);
 
-            for (std::vector<int>::size_type i = 0; i < _virt_capes.size(); ++i) {
-                write_off = "disable_uboot_overlay_" + _virt_capes[i].name + "=1 ";
-                write_on = "#disable_uboot_overlay_" + _virt_capes[i].name + "=1";
-
-                myfile.seekp(_virt_capes[i].file_seekf);
-
-                if (_virt_capes[i].status)
-                    myfile << write_on;
-                else if(!_virt_capes[i].status)
-                    myfile << write_off;
+            for (std::vector<int>::size_type i = 0; i < vect_overlay_.size(); ++i) {
+                for (std::vector<int>::size_type j = 0; i < vect_overlay_.at(i).option->size(); ++j) {
+                    while(getline(infile, in_line)) {
+                        if (outfile.tellp() == vect_overlay_.at(i).option->at(j).file_seekf) {
+                            if (vect_overlay_.at(i).option->at(j).status)
+                                outfile << "#" 
+                                        << vect_overlay_.at(i).option->at(j).name 
+                                        << std::endl;
+                            else if(!vect_overlay_.at(i).option->at(j).status)
+                                outfile << vect_overlay_.at(i).option->at(j).name 
+                                        << std::endl;
+                        }
+                        else {
+                            outfile << in_line << std::endl;
+                        }
+                    }
+                }
             }
             
-            myfile.close();
+            infile.close();
+            outfile.close();
 
-            get_caps_status();
+            get_overlay_status();
         }
 
         Element Render() override {
             return vbox({
                     text(" Virtual Capes : "),
-                    hbox(text(" "), container->Render())
+                    hbox(text(" "), container_overlays->Render())
                          | vscroll_indicator | frame |size(HEIGHT, LESS_THAN, 10),
                     separator(),
                     _button_update->Render(),
