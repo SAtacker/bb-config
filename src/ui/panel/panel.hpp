@@ -21,6 +21,7 @@ namespace panel {
 Panel PlaceHolder(const std::string& title);
 Panel PRU();
 Panel GPIO();
+Panel DAC();
 Panel ICS();
 Panel EMMC();
 Panel Led();
