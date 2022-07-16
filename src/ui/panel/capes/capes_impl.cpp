@@ -38,7 +38,17 @@ class CapesImpl : public PanelBase {
                         &vect_overlay_.at(i).option->at(j).status
                     ));
                 }
-                container_overlays->Add(container_option);
+                Component c_over = Renderer(Container::Vertical({
+                                    container_option
+                              }),
+                              [&] {
+                                return vbox({
+                                    text(vect_overlay_[i].name) | bold,
+                                    container_option->Render(),
+                                    separator(),
+                                });
+                              });
+                container_overlays->Add(c_over);
             }
 
             Add(Container::Vertical({
@@ -160,6 +170,7 @@ class CapesImpl : public PanelBase {
         Element Render() override {
             return vbox({
                     text(" Virtual Capes : "),
+                    separator(),
                     hbox(text(" "), container_overlays->Render())
                          | vscroll_indicator | frame |size(HEIGHT, LESS_THAN, 10),
                     separator(),
