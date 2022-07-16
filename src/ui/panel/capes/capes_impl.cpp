@@ -32,7 +32,7 @@ class CapesImpl : public PanelBase {
             write_cape_status();
             
             for (std::vector<int>::size_type i = 0; i < vect_overlay_.size(); ++i) {
-                for (std::vector<int>::size_type j = 0; i < vect_overlay_.at(i).option->size(); ++j) {
+                for (std::vector<int>::size_type j = 0; j < vect_overlay_.at(i).option->size(); ++j) {
                     container_option->Add(Checkbox(
                         vect_overlay_.at(i).option->at(j).name, 
                         &vect_overlay_.at(i).option->at(j).status
