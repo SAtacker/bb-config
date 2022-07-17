@@ -8,109 +8,148 @@
 #include <fstream>
 
 #define FILE_PATH "/boot/uEnv.txt"
-#define BACKUP "/boot/uEnv_bkp.txt"
 
 using namespace ftxui;
 
 namespace ui {
 
-struct Overlay_Option {
+struct Option {
     std::string name;
-    int file_seekf;
+    int fseek;
     bool status;
 };
 
-struct Overlays {
-    std::string name;
-    std::vector<Overlay_Option> *option;
-};
+class Overlay : public ComponentBase {
+public:
+    Overlay(std::string name) : name_(name) {
+        options_.clear();
+        trigger_selected_ = 0;
 
+        fetchState();
+
+        for (auto option : options_) {
+            container_->Add(Checkbox(option.name, &option.status));
+        }
+
+        Component page = Renderer(Container::Vertical({
+                                  container_,
+                                  trigger_
+                              }),
+                              [&] {
+                                return vbox({
+                                    text(name_) | bold,
+                                    container_->Render() | vscroll_indicator | flex,
+                                    trigger_->Render(),
+                                    separator(),
+                                });
+                              });
+
+        Add(page);
+    }
+
+private:
+    int trigger_selected_ = 0;
+    std::string name_;
+    std::vector<struct Option> options_;
+    Component container_ = Container::Vertical({});
+    Component trigger_ = Button("Trigger", [this] {});
+
+    void fetchState() {
+        options_.clear();
+        std::ifstream inFile;
+        inFile.open(FILE_PATH);
+
+        std::string file_line;
+        bool c_flags = false;
+
+        Option option;
+
+        while(getline(inFile, file_line)) {
+            if (std::regex_match(file_line, std::regex("(###[A-Z])(.*)"))) {
+                std::string temp = file_line;
+                temp.erase(remove(temp.begin(), temp.end(), '#'), temp.end());
+
+                if (name_.compare(temp) == 0) {
+                    c_flags = true;
+                    option.fseek = inFile.tellg();
+                    continue;
+                }
+            }
+
+            if (c_flags) {
+                if (file_line.compare("###") == 0) 
+                    break;
+                if (std::regex_match(file_line, std::regex("(###U-Boot Overlays###)")))
+                    break;
+                if (std::regex_match(file_line, std::regex("(###[a-z])(.*)"))) 
+                    continue;
+                
+                std::string temp = file_line;
+                temp.erase(remove(temp.begin(), temp.end(), '#'), temp.end());
+
+                option.name = temp;
+                if (file_line[0] == '#') {
+                    option.status = true;
+                }
+                else {
+                    option.status = false;
+                }
+
+                options_.push_back(option);
+
+                option.fseek = inFile.tellg();
+            }
+        }
+
+        inFile.close();
+    }
+};
 
 class CapesImpl : public PanelBase {
     public:
         CapesImpl() {
-            write_cape_status();
-            
-            for (std::vector<int>::size_type i = 0; i < vect_overlay_.size(); ++i) {
-                for (std::vector<int>::size_type j = 0; j < vect_overlay_.at(i).option->size(); ++j) {
-                    container_option->Add(Checkbox(
-                        vect_overlay_.at(i).option->at(j).name, 
-                        &vect_overlay_.at(i).option->at(j).status
-                    ));
-                }
-                container_option = Renderer(Container::Vertical({
-                                    container_option
-                              }),
-                              [&] {
-                                return vbox({
-                                    text(vect_overlay_[i].name) | bold,
-                                    container_option->Render(),
-                                    separator(),
-                                });
-                              });
-                container_overlays->Add(container_option);
+            fetchStates();
+
+            for (auto overlay : overlays_) {
+                container_->Add(Make<Overlay>(overlay));
             }
 
             Add(Container::Vertical({
-                                container_overlays,
-                                _button_update,
-                            }));
+                radiobox_,
+                container_,
+            }));
         }
 
         ~CapesImpl() = default;
 
-        std::string Title() override { return "Capes"; }
-
+        std::string Title() override { return "Overlays"; }
     private:
-        std::vector<Overlays> vect_overlay_;
-        Component container_option = Container::Vertical({});
-        Component container_overlays = Container::Vertical({});
-        Component _button_update = Button("Save", [this] { write_cape_status(); });
+        int selected_overlay_ = 0;
+        std::vector<std::string> overlays_;
 
-        void get_overlay_status() {
-            vect_overlay_.clear();
+        Component radiobox_ = Radiobox(&overlays_, &selected_overlay_);
+        Component container_ = Container::Tab({}, &selected_overlay_);
+        Component trigger_ = Button("Trigger", [this] {} );
 
-            std::ifstream inFile;
+        void fetchStates() {
+            std::fstream inFile;
             inFile.open(FILE_PATH);
+
+            std::string file_line;
+            bool c_flags = false;
 
             if (!inFile)
                 std::cout << "Error Openning the File\n";
 
-            std::string file_line;
-            bool s_flags = false; //Flag for Starting and Ending
-            bool overlay_flags = false; //Flag for Sub-Overlay
-            Overlays *ptr_overlay;
-            Overlay_Option *ptr_option;
-
             while(getline(inFile, file_line)) {
-                if (!file_line.compare("###U-Boot Overlays###") && !s_flags)
+                if (!file_line.compare("###U-Boot Overlays###") && !c_flags)
                 {
-                    s_flags = true;
+                    c_flags = true;
+                    continue;
                 }
-                else if (!file_line.compare("###U-Boot Overlays###") && s_flags)
+                else if (!file_line.compare("###U-Boot Overlays###") && c_flags)
                 {
-                    vect_overlay_.push_back(*ptr_overlay);
                     break;
-                }
-
-                if (file_line.compare("###") == 0) {
-                    vect_overlay_.push_back(*ptr_overlay);
-                    overlay_flags = false;
-                }
-
-                if (overlay_flags) {
-                    if (std::regex_match(file_line, std::regex("(###[a-z])(.*)"))) {
-                        continue;
-                    }
-                    std::string temp = file_line;
-                    temp.erase(remove(temp.begin(), temp.end(), '#'), temp.end());
-                    
-                    ptr_option->name = temp;
-                    if (file_line[0] == '#') {
-                        ptr_option->status = true;
-                    }
-                    ptr_overlay->option->push_back(*ptr_option);
-                    ptr_option->file_seekf = inFile.tellg();
                 }
 
                 if (std::regex_match(file_line, std::regex("(###[A-Z])(.*)"))) {
@@ -122,59 +161,21 @@ class CapesImpl : public PanelBase {
                     std::string temp = file_line;
                     temp.erase(remove(temp.begin(), temp.end(), '#'), temp.end());
 
-                    overlay_flags = true;
-                    ptr_overlay = new Overlays;
-                    ptr_overlay->option = new std::vector<Overlay_Option>;
-                    ptr_option = new Overlay_Option;
-                    ptr_overlay->name = temp;
-                    ptr_option->file_seekf = inFile.tellg();
+                    overlays_.push_back(temp);
+
+                    continue;
                 }
             }
 
             inFile.close();
         }
 
-        void write_cape_status() {
-            std::ofstream outfile;
-            std::ifstream infile;
-            std::string in_line;
-
-            infile.open(FILE_PATH);
-            outfile.open(BACKUP);
-
-            for (std::vector<int>::size_type i = 0; i < vect_overlay_.size(); ++i) {
-                for (std::vector<int>::size_type j = 0; i < vect_overlay_.at(i).option->size(); ++j) {
-                    while(getline(infile, in_line)) {
-                        if (outfile.tellp() == vect_overlay_.at(i).option->at(j).file_seekf) {
-                            if (vect_overlay_.at(i).option->at(j).status)
-                                outfile << "#" 
-                                        << vect_overlay_.at(i).option->at(j).name 
-                                        << std::endl;
-                            else if(!vect_overlay_.at(i).option->at(j).status)
-                                outfile << vect_overlay_.at(i).option->at(j).name 
-                                        << std::endl;
-                        }
-                        else {
-                            outfile << in_line << std::endl;
-                        }
-                    }
-                }
-            }
-            
-            infile.close();
-            outfile.close();
-
-            get_overlay_status();
-        }
-
         Element Render() override {
             return vbox({
-                    text(" Virtual Capes : "),
+                    text("Select a Overrlay Options : ") | bold,
+                    hbox(text(" "), radiobox_->Render()),
                     separator(),
-                    hbox(text(" "), container_overlays->Render())
-                         | vscroll_indicator | frame |size(HEIGHT, LESS_THAN, 10),
-                    separator(),
-                    _button_update->Render(),
+                    container_->Render() | vscroll_indicator | flex,
                 });
         }
 };
