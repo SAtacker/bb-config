@@ -9,14 +9,12 @@
 #include "ftxui/dom/elements.hpp"
 #include "ui/panel/panel.hpp"
 
-const std::string PWM_FILE_PATH = "/sys/class/pwm/";
-
 using namespace ftxui;
 
 std::vector<std::string> FindPWMs() {
   std::vector<std::string> names;
 
-  for (const auto& it : std::filesystem::directory_iterator(PWM_FILE_PATH)) {
+  for (const auto& it : std::filesystem::directory_iterator("/sys/class/pwm/")) {
     std::stringstream ss(it.path());
     std::string name;
 
