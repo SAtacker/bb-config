@@ -2,6 +2,7 @@
 #include <string>
 #include <filesystem>
 #include <fstream>
+#include <sstream>
 
 #include "process.hpp"
 #include "ftxui/component/component.hpp"
@@ -16,10 +17,15 @@ std::vector<std::string> FindPWMs() {
   std::vector<std::string> names;
 
   for (const auto& it : std::filesystem::directory_iterator(PWM_FILE_PATH)) {
-    std::string name = it.path();
-    names.push_back(name);
+    std::stringstream ss(it.path());
+    std::string name;
+
+    while(ss.good()) {
+      getline(ss, name, '/');
+    }
+
     if (name[3] == '-')
-        names.push_back(name);
+      names.push_back(name);
   }
 
   return names;
