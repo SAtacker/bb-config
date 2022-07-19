@@ -2,28 +2,30 @@
 #include <string>
 #include <filesystem>
 #include <fstream>
+#include <sstream>
 
 #include "process.hpp"
 #include "ftxui/component/component.hpp"
 #include "ftxui/dom/elements.hpp"
 #include "ui/panel/panel.hpp"
 
-const std::string PWM_FILE_PATH = "/sys/class/pwm/";
-
 using namespace ftxui;
 
 std::vector<std::string> FindPWMs() {
   std::vector<std::string> names;
 
-  procxx::process ls{"ls"};
-  ls.add_argument("-C1");
-  ls.add_argument(PWM_FILE_PATH);
-  ls.exec();
+  for (const auto& it : std::filesystem::directory_iterator("/sys/class/pwm/")) {
+    std::stringstream ss(it.path());
+    std::string name;
 
-  std::string name;
-  while (std::getline(ls.output(), name))
+    while(ss.good()) {
+      getline(ss, name, '/');
+    }
+
     if (name[3] == '-')
-        names.push_back(name);
+      names.push_back(name);
+  }
+
   return names;
 }
 
@@ -58,12 +60,12 @@ class DACImpl : public PanelBase {
                                     slider_dutyCycle->Render(),
                                     separator(),
                                     hbox(
-                                      text("Period: ")| bold, 
-                                      text(std::to_string(value_period)),
-                                      text(unit_entries[select_unit]),
-                                      text(" Duty Cycle: ")| bold, 
-                                      text(std::to_string(value_dutyCycle)), 
-                                      text("%")
+                                        text("Period: ")| bold, 
+                                        text(std::to_string(value_period)),
+                                        text(unit_entries[select_unit]),
+                                        text(" Duty Cycle: ")| bold, 
+                                        text(std::to_string(value_dutyCycle)), 
+                                        text("%")
                                     ),
                                     separator(),
                                     text("Select a Polarity:") | bold,
@@ -97,7 +99,7 @@ class DACImpl : public PanelBase {
 
         void TriggerPWM() {
           std::vector<long long> divider = {1000000000, 1000000, 1000, 1};
-          std::string path_name = PWM_FILE_PATH + v_DAC_pin_[selected];
+          std::string path_name = "/sys/class/pwm/" + v_DAC_pin_[selected];
 
           long long period = value_period * divider[select_unit];
           std::ofstream(path_name + "/period") << period;
