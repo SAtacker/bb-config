@@ -60,12 +60,12 @@ class DACImpl : public PanelBase {
                                     slider_dutyCycle->Render(),
                                     separator(),
                                     hbox(
-                                      text("Period: ")| bold, 
-                                      text(std::to_string(value_period)),
-                                      text(unit_entries[select_unit]),
-                                      text(" Duty Cycle: ")| bold, 
-                                      text(std::to_string(value_dutyCycle)), 
-                                      text("%")
+                                        text("Period: ")| bold, 
+                                        text(std::to_string(value_period)),
+                                        text(unit_entries[select_unit]),
+                                        text(" Duty Cycle: ")| bold, 
+                                        text(std::to_string(value_dutyCycle)), 
+                                        text("%")
                                     ),
                                     separator(),
                                     text("Select a Polarity:") | bold,
@@ -99,7 +99,7 @@ class DACImpl : public PanelBase {
 
         void TriggerPWM() {
           std::vector<long long> divider = {1000000000, 1000000, 1000, 1};
-          std::string path_name = PWM_FILE_PATH + v_DAC_pin_[selected];
+          std::string path_name = "/sys/class/pwm/" + v_DAC_pin_[selected];
 
           long long period = value_period * divider[select_unit];
           std::ofstream(path_name + "/period") << period;
