@@ -15,15 +15,13 @@ using namespace ftxui;
 std::vector<std::string> FindPWMs() {
   std::vector<std::string> names;
 
-  procxx::process ls{"ls"};
-  ls.add_argument("-C1");
-  ls.add_argument(PWM_FILE_PATH);
-  ls.exec();
-
-  std::string name;
-  while (std::getline(ls.output(), name))
+  for (const auto& it : std::filesystem::directory_iterator(PWM_FILE_PATH)) {
+    std::string name = it.path();
+    names.push_back(name);
     if (name[3] == '-')
         names.push_back(name);
+  }
+
   return names;
 }
 
