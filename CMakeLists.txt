@@ -10,7 +10,7 @@ set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
 
 FetchContent_Declare(ftxui
   GIT_REPOSITORY https://github.com/ArthurSonzogni/FTXUI
-  GIT_TAG bb3231695f00f3f73889b7ef10a78239c1af90e7
+  GIT_TAG v3.0.0
 )
 
 FetchContent_GetProperties(ftxui)
@@ -26,6 +26,7 @@ add_executable(${PROJECT_NAME}
   src/ui/panel/ics/ics_impl.cpp
   src/ui/panel/led/led_impl.cpp
   src/ui/panel/about/about_impl.cpp
+  src/ui/panel/dac/dac_impl.cpp
   src/ui/panel/panel.hpp
   src/ui/panel/placeholder/placeholder_impl.cpp
   src/ui/panel/pru/pru_impl.cpp
