@@ -20,6 +20,7 @@ using namespace std::chrono_literals;
 namespace ui {
 
 const std::string Analog_Path = "/sys/bus/iio/devices/iio:device0";
+const int Max_Analog = 4095;
 
 std::vector<std::string> FindAnalogs() {
   std::vector<std::string> names;
@@ -48,8 +49,9 @@ class Graph {
           break;
 
         float v = 0;
+        v += data_vect[i];
+        v /= Max_Analog;
         v *= height;
-        v += data_vect[i];   
 
         output[i] = static_cast<int>(v);
       }
@@ -105,9 +107,9 @@ class adcImpl : public PanelBase {
           text("Analog [Mhz]") | hcenter,
           hbox({
               vbox({
-                  text("2400 "),
+                  text("4095 "),
                   filler(),
-                  text("1200 "),
+                  text("2048 "),
                   filler(),
                   text("0 "),
               }),
@@ -117,7 +119,7 @@ class adcImpl : public PanelBase {
 
       return vbox({
         radio_->Render(),
-        graph_page,
+        graph_page | flex,
       }) | vscroll_indicator | frame;
     }
 };
