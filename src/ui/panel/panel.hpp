@@ -29,7 +29,7 @@ Panel DAC();
 Panel WiFi(ScreenInteractive*);
 Panel BackgroundWorker(ScreenInteractive*);
 Panel About();
-Panel Capes();
+Panel uEnv();
 Panel passwd();
 Panel ssh();
 }  // namespace panel

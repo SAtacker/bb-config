@@ -28,7 +28,7 @@ add_executable(${PROJECT_NAME}
   src/ui/panel/about/about_impl.cpp
   src/ui/panel/adc/adc_impl.cpp
   src/ui/panel/dac/dac_impl.cpp
-  src/ui/panel/capes/capes_impl.cpp
+  src/ui/panel/uEnv/uEnv_impl.cpp
   src/ui/panel/panel.hpp
   src/ui/panel/placeholder/placeholder_impl.cpp
   src/ui/panel/pru/pru_impl.cpp
