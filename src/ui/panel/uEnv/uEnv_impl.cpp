@@ -7,8 +7,8 @@
 #include <sstream>
 #include <fstream>
 
-#define FILE_PATH "/home/asus/Documents/cpp/uEnv.txt"
-#define BACKUP "/home/asus/Documents/cpp/uEnv_bkp.txt"
+#define File_uEnv "/boot/uEnv.txt"
+#define File_Backup "./uEnv_bkp.txt"
 
 using namespace ftxui;
 
@@ -100,7 +100,7 @@ private:
         menuNames_.clear();
 
         std::ifstream inFile;
-        inFile.open(FILE_PATH);
+        inFile.open(File_uEnv);
 
         if (!inFile)
             std::cout << "Error Openning the File\n";
@@ -138,7 +138,7 @@ private:
         env_ptr = new std::vector<Enviroment>;
 
         std::ifstream inFile;
-        inFile.open(FILE_PATH);
+        inFile.open(File_uEnv);
 
         if (!inFile)
             std::cout << "Error Openning the File\n";
@@ -207,8 +207,8 @@ private:
         std::ifstream infile;
         std::ofstream outfile;
 
-        infile.open(FILE_PATH);
-        outfile.open(BACKUP);
+        infile.open(File_uEnv);
+        outfile.open(File_Backup);
 
         std::string file_line;
         bool s_flags = false;
@@ -263,8 +263,8 @@ private:
         infile.close();
         outfile.close();
 
-        remove(FILE_PATH);
-        rename(BACKUP, FILE_PATH);
+        remove(File_uEnv);
+        rename(File_Backup, File_uEnv);
 
         reset();
     }
