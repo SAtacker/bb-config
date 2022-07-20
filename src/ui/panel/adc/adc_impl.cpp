@@ -49,7 +49,7 @@ class Graph {
           break;
 
         float v = 0;
-        v += data_vect[i];
+        v += (float) data_vect[i];
         v /= Max_Analog;
         v *= height;
 
@@ -61,7 +61,7 @@ class Graph {
 
     void update() {
       int value;
-      std::ifstream(Analog_Path + name_) >> value;
+      std::ifstream(Analog_Path + "/" + name_) >> value;
       data_vect.erase(data_vect.begin());
       data_vect.push_back(value);
     }
@@ -75,39 +75,26 @@ class Graph {
     std::string name_;
 };
 
-class adcImpl : public PanelBase {
+class graphImpl : public ComponentBase {
   public:
-    adcImpl() {
-      for (auto name : FindAnalogs()) {
-        analog_pin_.push_back(name);
-      }
-
-      Add( Container::Vertical( {
-        radio_,
-      }));
+    graphImpl(std::string name) : name_(name) {
+      my_graph.set_name(name_);
+      Add( Container::Vertical({}) );
     }
 
-    ~adcImpl() override = default;
-
-  private:
-    std::string Title() override { return "ADC"; }
-    int selected = 0;
-    std::vector<std::string> analog_pin_;  
-    Graph my_graph;
-    Component button_ = Button("Button", [this] {} );
-    Component radio_ = Radiobox(&analog_pin_, &selected); 
+    std::string label() const { return name_; }
 
     Element Render() override {
-      my_graph.shift++;
       my_graph.update();
-      const auto sleep_time = 0.03s;
-      std::this_thread::sleep_for(sleep_time);
 
-      auto graph_page = vbox({
-          text("Analog [Mhz]") | hcenter,
+      return vbox({
+          hbox({ 
+            text(name_),
+            text(" [Mhz]"),
+          }) | hcenter,
           hbox({
               vbox({
-                  text("4095 "),
+                  text("4096 "),
                   filler(),
                   text("2048 "),
                   filler(),
@@ -116,10 +103,65 @@ class adcImpl : public PanelBase {
               graph(std::ref(my_graph)) | flex,
           }) | flex,
       });
+    }
+
+  private:
+    std::string name_;
+    Graph my_graph;
+};
+
+class adcImpl : public PanelBase {
+  public:
+    adcImpl() {
+      if (std::filesystem::exists(Analog_Path)) {
+        for (auto name : FindAnalogs()) {
+          analog_pin_.push_back(name);
+          auto graph = std::make_shared<graphImpl>(name);
+          children_.push_back(graph);
+          graph_tab_->Add(graph);
+        }
+      }
+
+      Add( Container::Tab( {
+        Container::Vertical({
+          radio_,
+          button_,
+        }),
+        graph_tab_,
+      }, &tab ));
+    }
+
+    ~adcImpl() override = default;
+
+  private:
+    std::string Title() override { return "ADC"; }
+    int selected = 0;
+    int tab = 0;
+    std::vector<std::string> analog_pin_;
+    std::vector<std::shared_ptr<graphImpl>> children_;  
+    Component button_ = Button("Generate", [this] { tab = 1; } );
+    Component radio_ = Radiobox(&analog_pin_, &selected);
+    Component graph_tab_ =  Container::Vertical({}, &selected);
+
+    Element Render() override {
+      analog_pin_.clear();
+      for (const auto& child : children_) {
+        analog_pin_.push_back(child->label());
+      }
+
+      int i = 0;
+      if (tab == 1) {
+        for (const auto& child : children_) {
+          if (i == selected) {
+            return child->Render();
+          }
+          i++;
+        }
+      }
 
       return vbox({
         radio_->Render(),
-        graph_page | flex,
+        button_->Render(),
       }) | vscroll_indicator | frame;
     }
 };
