@@ -154,15 +154,16 @@ private:
                     auto menu = std::make_shared<MenuConfigs>(config, env_ptr);
                     menuConfig_.push_back(menu);
                     env_tab_->Add(menu);
-                    break;    // bool OnEvent(Event event) override {
-    //   bool t_flags = t_flags_;
-    //   bool ret = ComponentBase::OnEvent(event);
-    //   if (t_flags != t_flags_) {
-    //     my_graph.update();
-    //     t_flags_ = !t_flags_;
-    //   }
-    //   return ret;
-    // }
+                    break;
+                }
+                if (file_line.compare("###") == 0) {
+                    auto menu = std::make_shared<MenuConfigs>(config, env_ptr);
+                    menuConfig_.push_back(menu);
+                    env_tab_->Add(menu);
+                    break;
+                }
+                if (std::regex_match(file_line, std::regex("(###[a-z])(.*)")))
+                    continue;
                 
                 std::string temp = file_line;
                 temp.erase(remove(temp.begin(), temp.end(), '#'), temp.end());
