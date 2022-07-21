@@ -263,10 +263,26 @@ private:
         infile.close();
         outfile.close();
 
-        remove(File_uEnv);
-        rename(File_Backup, File_uEnv);
+        rename_file();
 
         reset();
+    }
+
+    void rename_file() {
+        std::ifstream infile;
+        std::ofstream outfile;
+
+        infile.open(File_Backup);
+        outfile.open(File_uEnv);
+
+        std::string file_line;
+
+        while(getline(infile, file_line)) {
+            outfile << file_line;
+        }
+
+        infile.close();
+        outfile.close();
     }
 };
 
