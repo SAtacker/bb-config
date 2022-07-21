@@ -265,9 +265,7 @@ private:
 
         remove(File_uEnv);
         rename(File_Backup, File_uEnv);
-        remove(File_Backup);
 
-        reset();
     }
 };
 
