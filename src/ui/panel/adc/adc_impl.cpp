@@ -77,9 +77,9 @@ class Graph {
 
 class graphImpl : public ComponentBase {
   public:
-    graphImpl(std::string name) : name_(name) {
+    graphImpl(std::string name, int *tab) : name_(name), tab_(tab) {
       my_graph.set_name(name_);
-      Add( Container::Vertical({}) );
+      Add( Container::Vertical({button_}) );
     }
 
     std::string label() const { return name_; }
@@ -102,12 +102,15 @@ class graphImpl : public ComponentBase {
               }),
               graph(std::ref(my_graph)) | flex,
           }) | flex,
+          button_->Render(),
       });
     }
 
   private:
     std::string name_;
     Graph my_graph;
+    int *tab_;
+    Component button_ = Button("Back", [this] { *tab_ = 1; });
 };
 
 class adcImpl : public PanelBase {
@@ -116,7 +119,7 @@ class adcImpl : public PanelBase {
       if (std::filesystem::exists(Analog_Path)) {
         for (auto name : FindAnalogs()) {
           analog_pin_.push_back(name);
-          auto graph = std::make_shared<graphImpl>(name);
+          auto graph = std::make_shared<graphImpl>(name, &tab);
           children_.push_back(graph);
           graph_tab_->Add(graph);
         }
