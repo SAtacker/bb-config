@@ -27,6 +27,7 @@ add_executable(${PROJECT_NAME}
   src/ui/panel/led/led_impl.cpp
   src/ui/panel/about/about_impl.cpp
   src/ui/panel/dac/dac_impl.cpp
+  src/ui/panel/uEnv/uEnv_impl.cpp
   src/ui/panel/panel.hpp
   src/ui/panel/placeholder/placeholder_impl.cpp
   src/ui/panel/pru/pru_impl.cpp
