@@ -85,11 +85,15 @@ class graphImpl : public ComponentBase {
       Update();
     }
 
-    ~graphImpl() {refresh_ui_continue = false;};
+    ~graphImpl() {
+      refresh_ui_continue_ = false;
+      graph_update_.join();
+    };
 
     std::string label() const { return name_; }
 
     Element Render() override {
+      my_graph.update();
       return vbox({
           hbox({ 
             text(name_),
@@ -111,18 +115,16 @@ class graphImpl : public ComponentBase {
 
   private:
     void Update() {
-      if (graph_update_.joinable())
-        graph_update_.join();
-
-      refresh_ui_continue = true;
+      refresh_ui_continue_ = true;
 
       graph_update_ = std::thread([&] {
-        while(refresh_ui_continue) {
-          screen_->Post([&] { my_graph.update(); });
-          screen_->Post(Event::Custom);
+        while(refresh_ui_continue_) {
+          using namespace std::chrono_literals;
+          std::this_thread::sleep_for(20ms);
+          my_graph.update();
+          screen_->PostEvent(Event::Custom);
         }
       });
-    
     }
 
     std::string name_;
@@ -130,13 +132,13 @@ class graphImpl : public ComponentBase {
     int *tab_;
     std::thread graph_update_;
     ScreenInteractive* screen_;
-    std::atomic<bool> refresh_ui_continue;
+    std::atomic<bool> refresh_ui_continue_;
     Component button_ = Button("Back", [this] { *tab_ = 0; });
 };
 
 class adcImpl : public PanelBase {
   public:
-    adcImpl(ScreenInteractive* screen) {
+    adcImpl(ScreenInteractive* screen) : screen_(screen) {
       if (std::filesystem::exists(Analog_Path)) {
         for (auto name : FindAnalogs()) {
           analog_pin_.push_back(name);
@@ -163,10 +165,13 @@ class adcImpl : public PanelBase {
     int tab = 0;
     std::vector<std::string> analog_pin_;
     std::vector<std::shared_ptr<graphImpl>> children_;
+    ScreenInteractive* screen_;
+    std::thread graph_update_;
+    bool refresh_ui_continue_;
     Component button_ = Button("Generate", [this] { tab = 1; } );
     Component radio_ = Radiobox(&analog_pin_, &selected);
     Component graph_tab_ =  Container::Vertical({}, &selected);
-    
+
     Element Render() override {
       analog_pin_.clear();
       for (const auto& child : children_) {
@@ -184,7 +189,9 @@ class adcImpl : public PanelBase {
       }
 
       return vbox({
+        text("Select Analog Pin :"),
         radio_->Render(),
+        separator(),
         button_->Render(),
       }) | vscroll_indicator | frame;
     }

@@ -60,6 +60,7 @@ target_compile_options(${PROJECT_NAME}
   PRIVATE "-Werror"
   PRIVATE "-Wdeprecated"
   PRIVATE "-Wshadow"
+  PRIVATE "-DBEAGLE_CONFIG_SANITIZE=ON"
 )
 
 # Useful for debugging and find 

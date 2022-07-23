@@ -102,9 +102,6 @@ private:
         std::ifstream inFile;
         inFile.open(File_uEnv);
 
-        if (!inFile)
-            std::cout << "Error Openning the File\n";
-
         std::string file_line;
         bool s_flags = false;
 
