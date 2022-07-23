@@ -19,7 +19,7 @@ using namespace std::chrono_literals;
 
 namespace ui {
 
-const std::string Analog_Path = "/sys/bus/iio/devices/iio:device0";
+const std::string Analog_Path = "/home/asus/Desktop/gsoc/cpp/analog";
 const int Max_Analog = 4095;
 
 std::vector<std::string> FindAnalogs() {
@@ -77,16 +77,19 @@ class Graph {
 
 class graphImpl : public ComponentBase {
   public:
-    graphImpl(std::string name, int *tab) : name_(name), tab_(tab) {
+    graphImpl(std::string name, int *tab, ScreenInteractive* screen) 
+              : name_(name), tab_(tab), screen_(screen) {
       my_graph.set_name(name_);
       Add( Container::Vertical({button_}) );
+
+      Update();
     }
+
+    ~graphImpl() {refresh_ui_continue = false;};
 
     std::string label() const { return name_; }
 
     Element Render() override {
-      my_graph.update();
-
       return vbox({
           hbox({ 
             text(name_),
@@ -107,19 +110,37 @@ class graphImpl : public ComponentBase {
     }
 
   private:
+    void Update() {
+      if (graph_update_.joinable())
+        graph_update_.join();
+
+      refresh_ui_continue = true;
+
+      graph_update_ = std::thread([&] {
+        while(refresh_ui_continue) {
+          screen_->Post([&] { my_graph.update(); });
+          screen_->Post(Event::Custom);
+        }
+      });
+    
+    }
+
     std::string name_;
     Graph my_graph;
     int *tab_;
-    Component button_ = Button("Back", [this] { *tab_ = 1; });
+    std::thread graph_update_;
+    ScreenInteractive* screen_;
+    std::atomic<bool> refresh_ui_continue;
+    Component button_ = Button("Back", [this] { *tab_ = 0; });
 };
 
 class adcImpl : public PanelBase {
   public:
-    adcImpl() {
+    adcImpl(ScreenInteractive* screen) {
       if (std::filesystem::exists(Analog_Path)) {
         for (auto name : FindAnalogs()) {
           analog_pin_.push_back(name);
-          auto graph = std::make_shared<graphImpl>(name, &tab);
+          auto graph = std::make_shared<graphImpl>(name, &tab, screen);
           children_.push_back(graph);
           graph_tab_->Add(graph);
         }
@@ -141,11 +162,11 @@ class adcImpl : public PanelBase {
     int selected = 0;
     int tab = 0;
     std::vector<std::string> analog_pin_;
-    std::vector<std::shared_ptr<graphImpl>> children_;  
+    std::vector<std::shared_ptr<graphImpl>> children_;
     Component button_ = Button("Generate", [this] { tab = 1; } );
     Component radio_ = Radiobox(&analog_pin_, &selected);
     Component graph_tab_ =  Container::Vertical({}, &selected);
-
+    
     Element Render() override {
       analog_pin_.clear();
       for (const auto& child : children_) {
@@ -170,8 +191,8 @@ class adcImpl : public PanelBase {
 };
 
 namespace panel {
-Panel Adc() {
-  return Make<adcImpl>();
+Panel Adc(ScreenInteractive* screen) {
+  return Make<adcImpl>(screen);
 }
 
 }  // namespace panel
