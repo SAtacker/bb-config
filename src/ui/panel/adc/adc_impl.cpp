@@ -93,7 +93,6 @@ class graphImpl : public ComponentBase {
     std::string label() const { return name_; }
 
     Element Render() override {
-      my_graph.update();
       return vbox({
           hbox({ 
             text(name_),
@@ -120,9 +119,10 @@ class graphImpl : public ComponentBase {
       graph_update_ = std::thread([&] {
         while(refresh_ui_continue_) {
           using namespace std::chrono_literals;
-          std::this_thread::sleep_for(20ms);
-          my_graph.update();
-          screen_->PostEvent(Event::Custom);
+          std::this_thread::sleep_for(1s);
+          screen_->Post([&] { my_graph.update(); });
+          screen_->Post(Event::Custom);
+          // screen_->PostEvent(Event::Custom);
         }
       });
     }
