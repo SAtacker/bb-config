@@ -119,7 +119,7 @@ class graphImpl : public ComponentBase {
       graph_update_ = std::thread([&] {
         while(refresh_ui_continue_) {
           using namespace std::chrono_literals;
-          std::this_thread::sleep_for(1s);
+          std::this_thread::sleep_for(0.05s);
           screen_->Post([&] { my_graph.update(); });
           screen_->Post(Event::Custom);
           // screen_->PostEvent(Event::Custom);
