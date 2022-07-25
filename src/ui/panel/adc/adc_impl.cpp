@@ -19,8 +19,10 @@ using namespace std::chrono_literals;
 
 namespace ui {
 
-const std::string Analog_Path = "/sys/bus/iio/devices/iio:device0";
+const std::string Analog_Path = "/home/asus/Desktop/gsoc/cpp/analog";
+// const std::string Analog_Path = "/sys/bus/iio/devices/iio:device0";
 const int Max_Analog = 4095;
+const float Max_Voltage = 3.3;
 
 std::vector<std::string> FindAnalogs() {
   std::vector<std::string> names;
@@ -50,10 +52,15 @@ class Graph {
 
         float v = 0;
         v += (float) data_vect[i];
+        v -= hScale_start_;
         v /= Max_Analog;
         v *= height;
 
-        output[i] = static_cast<int>(v);
+        for (int j = 0; j < sample_; j++) {
+          if ( i*sample_+j >= width )
+            break;
+          output[i*sample_+j] = static_cast<int>(v);
+        }
       }
       return output;
     }
@@ -62,17 +69,30 @@ class Graph {
     void update() {
       int value;
       std::ifstream(Analog_Path + "/" + name_) >> value;
-      data_vect.erase(data_vect.begin());
-      data_vect.push_back(value);
+      data_vect.pop_back();
+      data_vect.insert(data_vect.begin(), value);
     }
 
     void set_name(std::string input) {
       name_ = input;
     }
 
+    void set_sample(int sample) {
+      sample_ = sample;
+    }
+
+    void reset() {
+      for (auto &item : data_vect) {
+        item = 0;
+      }
+    }
+
   private:
-    std::vector<int> data_vect = std::vector<int>(200, 10);
+    std::vector<int> data_vect = std::vector<int>(400, 0);
     std::string name_;
+    int sample_;
+    int hScale_start_;
+    int hScale_end_;
 };
 
 class graphImpl : public ComponentBase {
@@ -80,7 +100,17 @@ class graphImpl : public ComponentBase {
     graphImpl(std::string name, int *tab, ScreenInteractive* screen) 
               : name_(name), tab_(tab), screen_(screen) {
       my_graph.set_name(name_);
-      Add( Container::Vertical({button_}) );
+      Add( Container::Vertical({
+        Container::Horizontal({
+          x_scaleDown_,
+          x_scaleUp_,
+        }),
+        Container::Horizontal({
+          button_,
+          reset_,
+        }),
+      }) 
+      );
 
       Update();
     }
@@ -93,22 +123,43 @@ class graphImpl : public ComponentBase {
     std::string label() const { return name_; }
 
     Element Render() override {
+      std::stringstream stream;
+      stream << std::fixed << std::setprecision(2) << yScale_start_;
+      std::string ss_start = stream.str();
+      stream.str();
+      stream << std::fixed << std::setprecision(2) << yScale_end_;
+      std::string ss_end = stream.str();
+
       return vbox({
+          hbox({
+            vbox({
+              text("scale: " + std::to_string(sample_)),
+              hbox({
+                x_scaleDown_->Render(),
+                x_scaleUp_->Render(),
+              }),
+            }),
+          }),
+          separator(),
           hbox({ 
             text(name_),
             text(" [Mhz]"),
           }) | hcenter,
           hbox({
               vbox({
-                  text("4096 "),
+                  text("3.3v "),
                   filler(),
-                  text("2048 "),
+                  text("1.7v "),
                   filler(),
-                  text("0 "),
+                  text("0.0v "),
               }),
               graph(std::ref(my_graph)) | flex,
           }) | flex,
-          button_->Render(),
+          separator(),
+          hbox({
+            button_->Render() | flex,
+            reset_->Render() | flex,
+          }),
       });
     }
 
@@ -119,21 +170,32 @@ class graphImpl : public ComponentBase {
       graph_update_ = std::thread([&] {
         while(refresh_ui_continue_) {
           using namespace std::chrono_literals;
-          std::this_thread::sleep_for(0.05s);
+          std::this_thread::sleep_for(1s);
           screen_->Post([&] { my_graph.update(); });
           screen_->Post(Event::Custom);
-          // screen_->PostEvent(Event::Custom);
+          my_graph.set_sample(sample_);
         }
       });
+    }
+
+    void updateSample(int value) {
+      if (value > 0 && value <= 5)
+        sample_ = value; 
     }
 
     std::string name_;
     Graph my_graph;
     int *tab_;
+    int sample_ = 1;
+    float yScale_start_ = 0.f;
+    float yScale_end_ = Max_Voltage;
     std::thread graph_update_;
     ScreenInteractive* screen_;
     std::atomic<bool> refresh_ui_continue_;
     Component button_ = Button("Back", [this] { *tab_ = 0; });
+    Component x_scaleUp_ = Button("Increase", [&] { updateSample(sample_+1); });
+    Component x_scaleDown_ = Button("Decress", [&] { updateSample(sample_-1); });
+    Component reset_ = Button("Reset", [&] { my_graph.reset(); });
 };
 
 class adcImpl : public PanelBase {
