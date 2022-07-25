@@ -123,13 +123,6 @@ class graphImpl : public ComponentBase {
     std::string label() const { return name_; }
 
     Element Render() override {
-      std::stringstream stream;
-      stream << std::fixed << std::setprecision(2) << yScale_start_;
-      std::string ss_start = stream.str();
-      stream.str();
-      stream << std::fixed << std::setprecision(2) << yScale_end_;
-      std::string ss_end = stream.str();
-
       return vbox({
           hbox({
             vbox({
