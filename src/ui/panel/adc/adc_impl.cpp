@@ -19,8 +19,7 @@ using namespace std::chrono_literals;
 
 namespace ui {
 
-const std::string Analog_Path = "/home/asus/Desktop/gsoc/cpp/analog";
-// const std::string Analog_Path = "/sys/bus/iio/devices/iio:device0";
+const std::string Analog_Path = "/sys/bus/iio/devices/iio:device0";
 const int Max_Analog = 4095;
 const float Max_Voltage = 3.3;
 
