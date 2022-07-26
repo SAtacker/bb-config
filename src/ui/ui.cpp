@@ -181,7 +181,8 @@ void Loop() {
            // TODO: panel::PlaceHolder("SSH"),
        }},
       {"Network",
-       {
+       {  
+           panel::NetMan(&screen),
            panel::WiFi(&screen),
            panel::ICS(),
        }},

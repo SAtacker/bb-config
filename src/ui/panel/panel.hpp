@@ -27,6 +27,7 @@ Panel Led();
 Panel Adc(ScreenInteractive*);
 Panel DAC();
 Panel WiFi(ScreenInteractive*);
+Panel NetMan(ScreenInteractive*);
 Panel BackgroundWorker(ScreenInteractive*);
 Panel About();
 Panel uEnv();
