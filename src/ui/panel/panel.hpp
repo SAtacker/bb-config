@@ -27,6 +27,7 @@ Panel EMMC();
 Panel Led();
 Panel WiFi(ScreenInteractive*);
 Panel BackgroundWorker(ScreenInteractive*);
+Panel service(ScreenInteractive*);
 Panel About();
 Panel passwd();
 Panel ssh();
