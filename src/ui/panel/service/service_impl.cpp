@@ -2,18 +2,23 @@
 #include "ui/panel/panel.hpp"
 #include "utils.hpp"
 
+/*
+ * GIO is a library, designed to present programmers
+ * with a modern and usable interface to a virtual 
+ * file system.
+ */
 #include <gio/gio.h>
 #include <string>
 #include <sstream>
-#include <time.h>
 
 using namespace ftxui;
 
+/*  store UnitListFiles services */
 struct service {
-    std::string name;
-    std::string path;
-    bool status;
-    bool backUp;
+    std::string name;   /* service name */
+    std::string path;   /* service files path */
+    bool status;        /* status enable = true */
+    bool backUp;        /* keep track changes */
 };
 
 namespace ui {
@@ -38,6 +43,9 @@ class ServiceImpl : public PanelBase {
         }
 
         ~ServiceImpl() {
+            /* When exit the program disable all 
+             * active threads 
+             */
             if (thread_.joinable())
                 thread_.join();
         }
@@ -45,15 +53,21 @@ class ServiceImpl : public PanelBase {
         std::string Title() override { return "Services"; }
 
     private:
+        /*
+         * This function read all the avaliable services
+         * in the systemd. Services will store inside list_services_
+         */
         void get_services() {
             list_services_.clear();
+
+            /* Initialize all the variable */
             GError* error = NULL;
             GVariant *ret;
             char *path, *status;
             GDBusProxy *proxy;
             GVariantIter *iter;
 
-            /* Create a D-Bus proxy; NM_DBUS_* defined in nm-dbus-interface.h */
+            /* Create a D-Bus proxy for systemd */
             proxy = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM,
                                                 G_DBUS_PROXY_FLAGS_NONE,
                                                 NULL,
@@ -65,6 +79,7 @@ class ServiceImpl : public PanelBase {
 
             g_assert(proxy);
 
+            /* Call ListUnitFiles method */
             ret = g_dbus_proxy_call_sync(
                 proxy,
                 "ListUnitFiles",
@@ -74,7 +89,8 @@ class ServiceImpl : public PanelBase {
                 NULL,
                 &error
             );
-
+            
+            /* Error Handling */
             if (!ret) {
                 g_dbus_error_strip_remote_error(error);
                 g_warning("Failed to get list connections: %s\n", error->message);
@@ -82,6 +98,7 @@ class ServiceImpl : public PanelBase {
                 return;
             }
 
+            /* store the return info into vector */
             g_variant_get(ret, "(a(ss))", &iter);
             while (g_variant_iter_loop(iter, "(ss)", &path, &status)) {
                 std::string s_path(path);
@@ -106,6 +123,7 @@ class ServiceImpl : public PanelBase {
                 list_services_.push_back(temp);
             }
 
+            /* free the memory after used */
             if (iter)
                 g_variant_iter_free (iter);
             if (ret)
@@ -114,6 +132,7 @@ class ServiceImpl : public PanelBase {
                 g_object_unref(proxy);
         }
 
+        /* Create a list of checkbox for the services */
         void build_ui() {
             container_->DetachAllChildren();
             for (auto& it : list_services_) {
@@ -121,13 +140,14 @@ class ServiceImpl : public PanelBase {
             }
         }
         
+        /* Enable the service to start when booting */
         void enable_service(const std::string &name) {
             GError* error = NULL;
             GVariant *ret, *value;
             GDBusProxy *proxy;
             GVariantBuilder *builder;
 
-            /* Create a D-Bus proxy; NM_DBUS_* defined in nm-dbus-interface.h */
+            /* Create a D-Bus proxy for systemd */
             proxy = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM,
                                                 G_DBUS_PROXY_FLAGS_NONE,
                                                 NULL,
@@ -139,10 +159,12 @@ class ServiceImpl : public PanelBase {
 
             g_assert(proxy);
 
+            /* Create a GVarient which consist name of services */
             builder = g_variant_builder_new (G_VARIANT_TYPE ("as"));
             g_variant_builder_add (builder, "s", name.c_str());
             value = g_variant_new ("(asbb)", builder, FALSE, FALSE);
 
+            /* Call EnableUnitFiles function to enable the service */
             ret = g_dbus_proxy_call_sync(
                 proxy,
                 "EnableUnitFiles",
@@ -153,6 +175,7 @@ class ServiceImpl : public PanelBase {
                 &error
             );
 
+            /* Error Handling */
             if (!ret) {
                 g_dbus_error_strip_remote_error(error);
                 g_warning("Failed to get disabled_service: %s\n", error->message);
@@ -162,17 +185,19 @@ class ServiceImpl : public PanelBase {
                 g_variant_unref(ret);
             }
 
+            /* free the memory after used */
             if (proxy)
                 g_object_unref(proxy);
         }
         
+        /* Disable the service to start when booting */
         void disable_service(const std::string &name) {
             GError* error = NULL;
             GVariant *ret, *value;
             GDBusProxy *proxy;
             GVariantBuilder *builder;
 
-            /* Create a D-Bus proxy; NM_DBUS_* defined in nm-dbus-interface.h */
+            /* Create a D-Bus proxy for systemd */
             proxy = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SYSTEM,
                                                 G_DBUS_PROXY_FLAGS_NONE,
                                                 NULL,
@@ -184,10 +209,12 @@ class ServiceImpl : public PanelBase {
 
             g_assert(proxy);
 
+            /* Call EnableUnitFiles function to enable the service */
             builder = g_variant_builder_new (G_VARIANT_TYPE ("as"));
             g_variant_builder_add (builder, "s", name.c_str());
             value = g_variant_new ("(asb)", builder, FALSE);
-
+            
+            /* Call EnableUnitFiles function to enable the service */
             ret = g_dbus_proxy_call_sync(
                 proxy,
                 "DisableUnitFiles",
@@ -198,6 +225,7 @@ class ServiceImpl : public PanelBase {
                 &error
             );
 
+            /* Error Handling */
             if (!ret) {
                 g_dbus_error_strip_remote_error(error);
                 g_warning("Failed to get disabled_service: %s\n", error->message);
@@ -206,7 +234,8 @@ class ServiceImpl : public PanelBase {
             } else {
                 g_variant_unref(ret);
             }
-
+            
+            /* free the memory after used */
             if (proxy)
                 g_object_unref(proxy);
         }
@@ -215,6 +244,7 @@ class ServiceImpl : public PanelBase {
             if (thread_.joinable())
                 thread_.join();
 
+            /* prompt loading page when applying the changes */
             tab_selected_ = 1;
             thread_ = std::thread([=] {
                 for (const auto &it : list_services_) {
@@ -225,7 +255,6 @@ class ServiceImpl : public PanelBase {
                             disable_service(it.name);
                     }
                 }
-                sleep(2);
                 get_services();
                 build_ui();
                 tab_selected_ = 0;
@@ -256,7 +285,6 @@ class ServiceImpl : public PanelBase {
         Component container_ = Container::Vertical({});
         Component waiting_ = Container::Vertical({});
         Component button_ = Button("Apply", [this] { apply_setting();});
-        Receiver<decltype(list_services_)> list_receiver_ = MakeReceiver<decltype(list_services_)>();
 };
 
 }  // namespace
