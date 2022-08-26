@@ -21,12 +21,16 @@ namespace panel {
 Panel PlaceHolder(const std::string& title);
 Panel PRU();
 Panel GPIO();
+Panel ADC(ScreenInteractive*);
 Panel DAC();
 Panel ICS();
 Panel EMMC();
 Panel Led();
+Panel uEnv();
 Panel WiFi(ScreenInteractive*);
 Panel BackgroundWorker(ScreenInteractive*);
+Panel service(ScreenInteractive*);
+Panel PinMux();
 Panel About();
 Panel passwd();
 Panel ssh();
