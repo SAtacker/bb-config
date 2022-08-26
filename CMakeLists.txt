@@ -19,6 +19,9 @@ if(NOT ftxui_POPULATED)
   add_subdirectory(${ftxui_SOURCE_DIR} ${ftxui_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
+find_package(PkgConfig)
+pkg_check_modules(deps REQUIRED IMPORTED_TARGET glib-2.0 libnm)
+
 add_executable(${PROJECT_NAME} 
   src/main.cpp 
   src/ui/panel/emmc/emmc_impl.cpp
@@ -26,13 +29,17 @@ add_executable(${PROJECT_NAME}
   src/ui/panel/ics/ics_impl.cpp
   src/ui/panel/led/led_impl.cpp
   src/ui/panel/about/about_impl.cpp
+  src/ui/panel/adc/adc_impl.cpp
   src/ui/panel/dac/dac_impl.cpp
+  src/ui/panel/uEnv/uEnv_impl.cpp
   src/ui/panel/panel.hpp
   src/ui/panel/placeholder/placeholder_impl.cpp
   src/ui/panel/pru/pru_impl.cpp
+  src/ui/panel/pinmux/pinmux_impl.cpp
   src/ui/panel/wifi/wifi_impl.cpp
   src/ui/panel/passwd/passwd.cpp
   src/ui/panel/ssh/ssh.cpp
+  src/ui/panel/service/service_impl.cpp
   src/ui/ui.cpp
   src/ui/ui.hpp
   src/utils.hpp
@@ -42,6 +49,7 @@ add_executable(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
   PRIVATE ftxui::component
   PRIVATE stdc++fs
+  PkgConfig::deps
 )
 
 target_include_directories(${PROJECT_NAME}
