@@ -2,6 +2,9 @@ name: Test Build
 on:
   pull_request:
     types: [ assigned, opened, synchronize, reopened ]
+  push:
+    branches:
+      - main
 
 jobs:
   armhf:
@@ -12,7 +15,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Install Deps
-      run: sudo apt install gcc-8-arm-linux-gnueabihf g++-8-arm-linux-gnueabihf
+      run: sudo apt install gcc-8-arm-linux-gnueabihf g++-8-arm-linux-gnueabihf libnm-dev libglib2.0-dev
     - name: Build
       run: |
         cd ${{ github.workspace }}

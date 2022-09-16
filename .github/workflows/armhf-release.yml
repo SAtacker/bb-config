@@ -18,7 +18,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Install Deps
-      run: sudo apt install gcc-8-arm-linux-gnueabihf g++-8-arm-linux-gnueabihf
+      run: sudo apt install gcc-8-arm-linux-gnueabihf g++-8-arm-linux-gnueabihf  libnm-dev libglib2.0-dev
     - name: Build
       id: armhf-artifact-download
       run: |
