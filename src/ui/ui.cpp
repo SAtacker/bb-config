@@ -173,12 +173,17 @@ void Loop() {
   std::vector<Group> groups = {
       {"System",
        {
-           panel::PRU(), panel::GPIO(), panel::DAC(), panel::EMMC(),
-           panel::Led(), panel::uEnv(), panel::passwd(), panel::ssh(),
-           panel::PinMux(), panel::service(&screen), panel::ADC(&screen),
-           // TODO: panel::PlaceHolder("Sensor Stats and Configurations "),
-           // TODO: panel::PlaceHolder("Firmware Update"),
-           // TODO: panel::PlaceHolder("SSH"),
+           panel::PRU(),
+           panel::GPIO(),
+           panel::DAC(),
+           panel::EMMC(),
+           panel::Led(),
+           panel::uEnv(),
+           panel::passwd(),
+           panel::ssh(),
+           panel::PinMux(),
+           panel::service(&screen),
+           panel::ADC(&screen),
        }},
       {"Network",
        {
