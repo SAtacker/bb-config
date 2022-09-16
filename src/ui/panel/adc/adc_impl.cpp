@@ -21,7 +21,6 @@ namespace ui {
 
 const std::string Analog_Path = "/sys/bus/iio/devices/iio:device0";
 const int Max_Analog = 4095;
-const float Max_Voltage = 1.8;
 
 std::vector<std::string> FindAnalogs() {
   std::vector<std::string> names;
@@ -95,7 +94,6 @@ class Graph {
     std::string name_;
     int sample_;
     int hScale_start_;
-    int hScale_end_;
 };
 
 // graphImpl class handles the page UI for the graph
@@ -194,8 +192,6 @@ class graphImpl : public ComponentBase {
     Graph my_graph;
     int *tab_;
     int sample_ = 1;
-    float yScale_start_ = 0.f;
-    float yScale_end_ = Max_Voltage;
     std::thread graph_update_;
     ScreenInteractive* screen_;
     std::atomic<bool> refresh_ui_continue_;
@@ -214,7 +210,7 @@ class adcImpl : public PanelBase {
           // Store in a vector
           analog_pin_.push_back(name);
           // Create graph page
-          auto graph = std::make_shared<graphImpl>(name, &tab, screen);
+          auto graph = std::make_shared<graphImpl>(name, &tab, screen_);
           children_.push_back(graph);
           graph_tab_->Add(graph);
         }
@@ -241,7 +237,6 @@ class adcImpl : public PanelBase {
     std::vector<std::shared_ptr<graphImpl>> children_;
     ScreenInteractive* screen_;
     std::thread graph_update_;
-    bool refresh_ui_continue_;
     Component button_ = Button("Generate", [this] { tab = 1; } );
     Component radio_ = Radiobox(&analog_pin_, &selected);
     Component graph_tab_ =  Container::Vertical({}, &selected);

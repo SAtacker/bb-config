@@ -287,7 +287,7 @@ private:
     // Create color for Menu
     MenuEntryOption Colored(ftxui::Color c) {
         MenuEntryOption option;
-        option.transform = [c](EntryState state) {
+        option.transform = [](EntryState state) {
             state.label = (state.focused ? "> " : "  ") + state.label + " ";
             Element e = text(state.label) | hcenter;
             if (state.focused)
