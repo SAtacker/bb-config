@@ -102,8 +102,8 @@ class PRUPanel : public PanelBase {
                                           vbox(std::move(action_list)) | flex,
                                           separator(),
                                           vbox(std::move(info_list)) | flex,
-                                      }) | vscroll_indicator | frame |
-                                          flex);
+                                      }) | vscroll_indicator |
+                                          frame | flex);
   }
 
   std::vector<std::shared_ptr<Pru>> children_;
