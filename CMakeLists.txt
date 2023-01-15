@@ -4,19 +4,28 @@ project(bb-config VERSION 0.1)
 option(BEAGLE_CONFIG_SANITIZE "Use sanitize debug options" OFF)
 option(ARMHF_DEB "Debian Package for armhf" OFF)
 option(VERSION_FILE "Create a version file" OFF)
+option(BEAGLE_CONFIG_WITH_FETCH_FTXUI "Use FetchContent to fetch FTXUI" ON)
 
-include(FetchContent)
-set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
+if(BEAGLE_CONFIG_WITH_FETCH_FTXUI)
 
-FetchContent_Declare(ftxui
-  GIT_REPOSITORY https://github.com/ArthurSonzogni/FTXUI
-  GIT_TAG v3.0.0
-)
+	include(FetchContent)
+	set(FETCHCONTENT_UPDATES_DISCONNECTED TRUE)
 
-FetchContent_GetProperties(ftxui)
-if(NOT ftxui_POPULATED)
-  FetchContent_Populate(ftxui)
-  add_subdirectory(${ftxui_SOURCE_DIR} ${ftxui_BINARY_DIR} EXCLUDE_FROM_ALL)
+	FetchContent_Declare(ftxui
+		GIT_REPOSITORY https://github.com/ArthurSonzogni/FTXUI
+		GIT_TAG v3.0.0
+	)
+
+	FetchContent_GetProperties(ftxui)
+	if(NOT ftxui_POPULATED)
+		FetchContent_Populate(ftxui)
+		add_subdirectory(${ftxui_SOURCE_DIR} ${ftxui_BINARY_DIR} EXCLUDE_FROM_ALL)
+	endif()
+
+else()
+
+	find_package(ftxui 3.0.0 REQUIRED)
+
 endif()
 
 find_package(PkgConfig)
