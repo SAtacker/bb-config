@@ -8,21 +8,20 @@ on:
 
 jobs:
   armhf:
-    name: build-armhf
+    name: Test build
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Install Deps
-      run: sudo apt install gcc-8-arm-linux-gnueabihf g++-8-arm-linux-gnueabihf libnm-dev libglib2.0-dev
+      run: |
+        sudo apt install gcc-12 g++-12 libnm-dev libglib2.0-dev -y
     - name: Build
       run: |
         cd ${{ github.workspace }}
         mkdir build
         cd build
-        cmake ..  -DCMAKE_CXX_COMPILER=$(which arm-linux-gnueabihf-g++-8) \
-                  -DCMAKE_C_COMPILER=$(which arm-linux-gnueabihf-gcc-8) \
-                  -DARMHF_DEB=ON \
-                  -DARCHITECTURE="armhf"
+        cmake ..  -DCMAKE_CXX_COMPILER=$(which g++-12) \
+                  -DCMAKE_C_COMPILER=$(which gcc-12)
         make -j$(nproc)

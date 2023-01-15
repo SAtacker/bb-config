@@ -18,15 +18,17 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Install Deps
-      run: sudo apt install gcc-8-arm-linux-gnueabihf g++-8-arm-linux-gnueabihf  libnm-dev libglib2.0-dev
+      run: |
+        sudo dpkg --add-architecture armhf
+        sudo apt install gcc-12-arm-linux-gnueabihf g++-12-arm-linux-gnueabihf  libnm-dev:armhf libglib2.0-dev -y
     - name: Build
       id: armhf-artifact-download
       run: |
         cd ${{ github.workspace }}
         mkdir build
         cd build
-        cmake ..  -DCMAKE_CXX_COMPILER=$(which arm-linux-gnueabihf-g++-8) \
-                  -DCMAKE_C_COMPILER=$(which arm-linux-gnueabihf-gcc-8) \
+        cmake ..  -DCMAKE_CXX_COMPILER=$(which arm-linux-gnueabihf-g++-12) \
+                  -DCMAKE_C_COMPILER=$(which arm-linux-gnueabihf-gcc-12) \
                   -DARMHF_DEB=ON \
                   -DARCHITECTURE="armhf" \
                   -DGIT_VERSION=$(echo ${{ github.ref }} | grep -o v'[0-9]\+\.[0-9]\+\.[0-9]\+')

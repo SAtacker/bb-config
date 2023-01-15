@@ -21,6 +21,7 @@
 
 <p align="center">
   <img src="https://github.com/SAtacker/bb-config/actions/workflows/armhf-release.yml/badge.svg">
+  <img src="https://github.com/SAtacker/bb-config/actions/workflows/pull_request_build.yml/badge.svg?branch=main" >
   <img src="https://img.shields.io/github/stars/SAtacker/bb-config">
   <img src="https://img.shields.io/github/forks/SAtacker/bb-config">
   <img src="https://img.shields.io/github/issues/SAtacker/bb-config">

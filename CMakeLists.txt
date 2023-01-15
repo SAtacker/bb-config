@@ -113,7 +113,8 @@ if(GIT_VERSION)
 endif()
 
 if(ARMHF_DEB)
-
+  set(CMAKE_CXX_COMPILER_TARGET arm-linux-gnueabihf)
+  set(CMAKE_C_COMPILER_TARGET arm-linux-gnueabihf)
   if(ARCHITECTURE)
   else()
     EXECUTE_PROCESS( COMMAND uname -m COMMAND tr -d '\n' OUTPUT_VARIABLE ARCHITECTURE)
